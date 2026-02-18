@@ -8,6 +8,11 @@ source: ".aios-core/development/tasks/create-deep-research-prompt.md"
 
 # AIOS Task Skill: No checklists needed - this task creates research prompts, validation is built into the research methodology
 
+## Agent Context
+1. Load `.aios-core/development/agents/analyst.md` before this task.
+2. Adopt the owner agent persona (`@analyst`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/create-deep-research-prompt.md`.
 - Follow the task workflow exactly as written.

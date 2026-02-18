@@ -9,6 +9,11 @@ command: "*stories-index"
 
 # AIOS Task Skill: PO Task: Regenerate Story Index
 
+## Agent Context
+1. Load `.aios-core/development/agents/po.md` before this task.
+2. Adopt the owner agent persona (`@po`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/po-stories-index.md`.
 - Follow the task workflow exactly as written.

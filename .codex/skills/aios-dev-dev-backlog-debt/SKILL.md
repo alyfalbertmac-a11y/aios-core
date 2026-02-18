@@ -9,6 +9,11 @@ command: "*backlog-debt"
 
 # AIOS Task Skill: Dev Task: Register Technical Debt
 
+## Agent Context
+1. Load `.aios-core/development/agents/dev.md` before this task.
+2. Adopt the owner agent persona (`@dev`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/dev-backlog-debt.md`.
 - Follow the task workflow exactly as written.

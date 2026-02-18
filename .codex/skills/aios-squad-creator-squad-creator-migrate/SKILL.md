@@ -8,6 +8,11 @@ source: ".aios-core/development/tasks/squad-creator-migrate.md"
 
 # AIOS Task Skill: *migrate-squad
 
+## Agent Context
+1. Load `.aios-core/development/agents/squad-creator.md` before this task.
+2. Adopt the owner agent persona (`@squad-creator`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/squad-creator-migrate.md`.
 - Follow the task workflow exactly as written.

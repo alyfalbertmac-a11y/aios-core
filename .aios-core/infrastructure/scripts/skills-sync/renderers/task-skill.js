@@ -11,6 +11,14 @@ function normalizeAgentSlug(agent) {
   return String(agent || '').trim().replace(/^aios-/, '');
 }
 
+function getAgentSourceFilename(agent) {
+  const agentSlug = normalizeAgentSlug(agent);
+  if (!agentSlug) {
+    throw new Error('Task skill requires owner agent');
+  }
+  return agentSlug === 'master' ? 'aios-master.md' : `${agentSlug}.md`;
+}
+
 function getTaskSkillId(taskId, agent) {
   const id = normalizeTaskId(taskId);
   const agentSlug = normalizeAgentSlug(agent);
@@ -54,6 +62,7 @@ function buildTaskSkillContent(taskSpec) {
   const description = summary || `Execute AIOS task workflow ${taskSpec.id}.`;
   const commandHint = String(taskSpec.command || '').trim();
   const normalizedAgent = normalizeAgentSlug(taskSpec.agent);
+  const ownerAgentFile = getAgentSourceFilename(taskSpec.agent);
   const interactionNote = taskSpec.elicit
     ? '- This task requires user interaction points (`elicit=true`). Do not skip them.'
     : '- Execute non-interactive flow unless blocked by missing context.';
@@ -67,6 +76,11 @@ source: ${toYamlString(`.aios-core/development/tasks/${taskSpec.filename}`)}
 ${commandHint ? `command: ${toYamlString(commandHint)}\n` : ''}---
 
 # AIOS Task Skill: ${title}
+
+## Agent Context
+1. Load \`.aios-core/development/agents/${ownerAgentFile}\` before this task.
+2. Adopt the owner agent persona (\`@${normalizedAgent}\`) for the entire execution.
+3. Only then execute the task workflow below.
 
 ## Source of Truth
 - Load \`.aios-core/development/tasks/${taskSpec.filename}\`.
@@ -91,6 +105,7 @@ ${commandHint ? `## Canonical Command\n- \`${commandHint}\`\n\n` : ''}## Guardra
 module.exports = {
   normalizeTaskId,
   normalizeAgentSlug,
+  getAgentSourceFilename,
   getTaskSkillId,
   sanitizeDescription,
   toYamlString,

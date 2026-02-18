@@ -8,6 +8,11 @@ source: ".aios-core/development/tasks/shard-doc.md"
 
 # AIOS Task Skill: Document Sharding Task
 
+## Agent Context
+1. Load `.aios-core/development/agents/po.md` before this task.
+2. Adopt the owner agent persona (`@po`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/shard-doc.md`.
 - Follow the task workflow exactly as written.

@@ -8,6 +8,11 @@ source: ".aios-core/development/tasks/spec-gather-requirements.md"
 
 # AIOS Task Skill: Spec Pipeline: Gather Requirements
 
+## Agent Context
+1. Load `.aios-core/development/agents/pm.md` before this task.
+2. Adopt the owner agent persona (`@pm`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/spec-gather-requirements.md`.
 - Follow the task workflow exactly as written.

@@ -1,6 +1,6 @@
 metadata:
   version: 1.0.0
-  lastUpdated: '2026-02-17T23:43:28.921Z'
+  lastUpdated: '2026-02-17T23:43:47.881Z'
   entityCount: 509
   checksumAlgorithm: sha256
 entities:
@@ -8354,7 +8354,7 @@ entities:
         constraints: []
         extensionPoints: []
       checksum: sha256:1cf249979578d6f8441c81aeb0695d59fd64f757e2b319bf08e944ab566b6f79
-      lastVerified: '2026-02-17T23:43:28.919Z'
+      lastVerified: '2026-02-17T23:43:47.880Z'
     active-modules.verify:
       path: .aios-core/core/memory/__tests__/active-modules.verify.js
       type: module

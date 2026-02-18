@@ -9,6 +9,11 @@ command: "*analyze"
 
 # AIOS Task Skill: Cross-Artifact Analysis Task
 
+## Agent Context
+1. Load `.aios-core/development/agents/qa.md` before this task.
+2. Adopt the owner agent persona (`@qa`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/analyze-cross-artifact.md`.
 - Follow the task workflow exactly as written.

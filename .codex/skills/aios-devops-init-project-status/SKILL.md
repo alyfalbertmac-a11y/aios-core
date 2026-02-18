@@ -8,6 +8,11 @@ source: ".aios-core/development/tasks/init-project-status.md"
 
 # AIOS Task Skill: init-project-status
 
+## Agent Context
+1. Load `.aios-core/development/agents/devops.md` before this task.
+2. Adopt the owner agent persona (`@devops`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/init-project-status.md`.
 - Follow the task workflow exactly as written.

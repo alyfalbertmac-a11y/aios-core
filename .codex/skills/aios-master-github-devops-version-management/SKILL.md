@@ -8,6 +8,11 @@ source: ".aios-core/development/tasks/github-devops-version-management.md"
 
 # AIOS Task Skill: version-management.md
 
+## Agent Context
+1. Load `.aios-core/development/agents/aios-master.md` before this task.
+2. Adopt the owner agent persona (`@master`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/github-devops-version-management.md`.
 - Follow the task workflow exactly as written.

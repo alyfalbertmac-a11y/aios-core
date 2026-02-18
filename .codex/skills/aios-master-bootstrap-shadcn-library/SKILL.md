@@ -8,6 +8,11 @@ source: ".aios-core/development/tasks/bootstrap-shadcn-library.md"
 
 # AIOS Task Skill: Bootstrap Shadcn/Radix Component Library
 
+## Agent Context
+1. Load `.aios-core/development/agents/aios-master.md` before this task.
+2. Adopt the owner agent persona (`@master`) for the entire execution.
+3. Only then execute the task workflow below.
+
 ## Source of Truth
 - Load `.aios-core/development/tasks/bootstrap-shadcn-library.md`.
 - Follow the task workflow exactly as written.

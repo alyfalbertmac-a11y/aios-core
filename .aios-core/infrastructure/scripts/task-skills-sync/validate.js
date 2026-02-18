@@ -8,7 +8,11 @@ const yaml = require('js-yaml');
 const { parseAllTasks } = require('../ide-sync/task-parser');
 const { parseAllAgents } = require('../ide-sync/agent-parser');
 const { isParsableAgent } = require('../skills-sync/contracts');
-const { getTaskSkillId, normalizeAgentSlug } = require('../skills-sync/renderers/task-skill');
+const {
+  getTaskSkillId,
+  normalizeAgentSlug,
+  getAgentSourceFilename,
+} = require('../skills-sync/renderers/task-skill');
 
 const SUPPORTED_SCOPES = ['catalog', 'full'];
 
@@ -339,6 +343,10 @@ function validateTaskSkillContent(content, expected) {
       reason: `missing canonical task path "${expected.filename}"`,
     },
     {
+      ok: content.includes(`.aios-core/development/agents/${expected.agentFilename}`),
+      reason: `missing owner agent preload "${expected.agentFilename}"`,
+    },
+    {
       ok: content.includes('AIOS Task Skill'),
       reason: 'missing AIOS task skill header',
     },
@@ -539,6 +547,7 @@ function validateTaskSkills(options = {}) {
       const issues = validateTaskSkillContent(content, {
         skillId: item.skillId,
         filename: task.filename,
+        agentFilename: getAgentSourceFilename(item.agent),
       });
       for (const issue of issues) {
         errors.push(`${item.skillId}: ${issue}`);
