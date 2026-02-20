@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 const { normalizeCommands, getVisibleCommands } = require('./agent-parser');
-const { getAgentSkillId } = require('../skills-sync/renderers/agent-skill');
+const { getAgentSkillId, readSourceFile } = require('../skills-sync/renderers/agent-skill');
 
 /**
  * All agents use external agent-context.md file strategy.
@@ -188,6 +188,53 @@ function buildActivationFlowA(agentData) {
 6. Stay in this persona until explicit exit.`;
 }
 
+/**
+ * Extract Persona DNA from source content.
+ * Looks for content between === PERSONA DNA === and === ENHANCEMENT === markers.
+ * Falls back to first 15 non-empty lines of body if markers not found.
+ *
+ * @param {string} sourceContent - Full source file content
+ * @returns {string} - DNA section (~150 tokens of Identity + Constraints)
+ */
+function extractPersonaDNA(sourceContent) {
+  if (!sourceContent) return '';
+
+  const content = String(sourceContent);
+
+  // Try to extract between markers
+  const dnaStart = content.indexOf('=== PERSONA DNA ===');
+  const enhancementStart = content.indexOf('=== ENHANCEMENT ===');
+
+  if (dnaStart !== -1 && enhancementStart !== -1 && dnaStart < enhancementStart) {
+    const dnaSection = content
+      .slice(dnaStart + '=== PERSONA DNA ==='.length, enhancementStart)
+      .trim();
+    return dnaSection;
+  }
+
+  // Fallback: use first 15 non-empty lines of body (after frontmatter/YAML block)
+  const lines = content.split(/\r?\n/);
+  const bodyLines = [];
+  let inYamlBlock = false;
+  let yamlBlockCount = 0;
+
+  for (const line of lines) {
+    if (line.trim().startsWith('```')) {
+      inYamlBlock = !inYamlBlock;
+      yamlBlockCount++;
+      continue;
+    }
+    // Skip until after first YAML block
+    if (yamlBlockCount < 2 || inYamlBlock) continue;
+    if (line.trim()) {
+      bodyLines.push(line);
+      if (bodyLines.length >= 15) break;
+    }
+  }
+
+  return bodyLines.join('\n');
+}
+
 function transform(agentData) {
   const agent = agentData.agent || {};
   const name = agent.name || agentData.id;
@@ -200,8 +247,36 @@ function transform(agentData) {
   const sourcePath = `.aios-core/development/agents/${agentData.filename}`;
   const isGroupA = GROUP_A_AGENTS.has(agentData.id);
 
-  // Common header
-  const header = `${renderFrontmatter(buildFrontmatter(agentData))}
+  const frontmatter = renderFrontmatter(buildFrontmatter(agentData));
+  const sourceContent = readSourceFile(sourcePath);
+
+  if (sourceContent) {
+    const dna = extractPersonaDNA(sourceContent);
+    const enhancementMarkerIdx = sourceContent.indexOf('=== ENHANCEMENT ===');
+
+    if (dna && enhancementMarkerIdx !== -1) {
+      // Source already has DNA/Enhancement markers — preserve structure as-is
+      return `${frontmatter}
+
+${sourceContent}
+`;
+    }
+
+    // Source exists but no markers — embed with DNA/Enhancement wrapper
+    return `${frontmatter}
+
+# === PERSONA DNA ===
+
+${dna || '<!-- DNA not found in source — using full source embed -->'}
+
+# === ENHANCEMENT ===
+
+${sourceContent}
+`;
+  }
+
+  // Fallback: source file not found, use pointer-based content
+  const header = `${frontmatter}
 
 # AIOS ${title} (${name})
 
@@ -217,7 +292,6 @@ ${whenToUse}
   if (isGroupA) {
     activationFlow = buildActivationFlowA(agentData);
   } else {
-    // Unknown agent — fallback to basic activation (no context file)
     activationFlow = `## Activation Flow
 1. Read the full source agent definition before acting.
 2. Adopt persona, commands, and constraints exactly as defined.
@@ -241,6 +315,7 @@ function getFilename(agentData) {
 module.exports = {
   getNativeAgentName,
   GROUP_A_AGENTS,
+  extractPersonaDNA,
   transform,
   getFilename,
   format: 'claude-native-agent',

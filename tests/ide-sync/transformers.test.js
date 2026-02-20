@@ -195,29 +195,45 @@ describe('IDE Transformers', () => {
       const result = claudeNative.transform(sampleAgent);
       expect(result).toContain('- project-context');
     });
+
+    it('should embed full source content when source file exists', () => {
+      // sampleAgent uses filename 'dev/dev.md' which exists on disk
+      const result = claudeNative.transform(sampleAgent);
+      // Should contain the actual agent file content (ACTIVATION-NOTICE)
+      expect(result).toContain('ACTIVATION-NOTICE');
+      // Should NOT contain pointer-based "Source of Truth" section
+      expect(result).not.toContain('## Source of Truth');
+    });
+
+    it('should fall back to pointer when source file not found', () => {
+      const fakeAgent = { ...sampleAgent, filename: 'nonexistent/nonexistent.md' };
+      const result = claudeNative.transform(fakeAgent);
+      expect(result).toContain('## Source of Truth');
+      expect(result).toContain('## Activation Flow');
+    });
   });
 
   describe('claude commands transformer', () => {
-    it('should generate interactive session command', () => {
+    it('should embed full source content when source file exists', () => {
       const result = claudeCommands.transform(sampleAgent);
+      // With embed, the result should contain the actual agent file content
+      expect(result).toContain('ACTIVATION-NOTICE');
+    });
+
+    it('should fall back to pointer when source file not found', () => {
+      const fakeAgent = { ...sampleAgent, filename: 'nonexistent/nonexistent.md' };
+      const result = claudeCommands.transform(fakeAgent);
       expect(result).toContain('Interactive Session');
       expect(result).toContain('Activation Flow');
+      expect(result).toContain('HALT and await user input');
     });
 
-    it('should reference source agent definition', () => {
-      const result = claudeCommands.transform(sampleAgent);
-      expect(result).toContain('.aios-core/development/agents/dev/dev.md');
-    });
-
-    it('should reference MEMORY.md and agent-context.md', () => {
-      const result = claudeCommands.transform(sampleAgent);
+    it('should reference source in fallback mode', () => {
+      const fakeAgent = { ...sampleAgent, filename: 'nonexistent/nonexistent.md' };
+      const result = claudeCommands.transform(fakeAgent);
+      expect(result).toContain('.aios-core/development/agents/nonexistent/nonexistent.md');
       expect(result).toContain('MEMORY.md');
       expect(result).toContain('agent-context.md');
-    });
-
-    it('should include HALT instruction for interactivity', () => {
-      const result = claudeCommands.transform(sampleAgent);
-      expect(result).toContain('HALT and await user input');
     });
 
     it('should return correct filename', () => {
@@ -247,9 +263,20 @@ describe('IDE Transformers', () => {
   });
 
   describe('claude skill transformer', () => {
-    it('should generate skill content compatible with shared renderer', () => {
+    it('should generate skill frontmatter with name', () => {
       const result = claudeSkills.transform(sampleAgent);
       expect(result).toContain('name: dev');
+    });
+
+    it('should embed full source content when source file exists', () => {
+      const result = claudeSkills.transform(sampleAgent);
+      // With embed, the result should contain the actual agent file content
+      expect(result).toContain('ACTIVATION-NOTICE');
+    });
+
+    it('should fall back to pointer when source file not found', () => {
+      const fakeAgent = { ...sampleAgent, filename: 'nonexistent/nonexistent.md' };
+      const result = claudeSkills.transform(fakeAgent);
       expect(result).toContain('Activation Protocol');
     });
 
@@ -259,14 +286,63 @@ describe('IDE Transformers', () => {
   });
 
   describe('gemini skill transformer', () => {
-    it('should generate skill content compatible with shared renderer', () => {
+    it('should generate skill frontmatter with name', () => {
       const result = geminiSkills.transform(sampleAgent);
       expect(result).toContain('name: dev');
+    });
+
+    it('should embed full source content when source file exists', () => {
+      const result = geminiSkills.transform(sampleAgent);
+      expect(result).toContain('ACTIVATION-NOTICE');
+    });
+
+    it('should fall back to pointer when source file not found', () => {
+      const fakeAgent = { ...sampleAgent, filename: 'nonexistent/nonexistent.md' };
+      const result = geminiSkills.transform(fakeAgent);
       expect(result).toContain('Starter Commands');
     });
 
     it('should generate nested SKILL.md path', () => {
       expect(geminiSkills.getFilename(sampleAgent)).toBe('dev/SKILL.md');
+    });
+  });
+
+  describe('claude native agent transformer - AGF-4 DNA/Enhancement split', () => {
+    it('should export extractPersonaDNA function', () => {
+      expect(typeof claudeNative.extractPersonaDNA).toBe('function');
+    });
+
+    it('extractPersonaDNA should extract DNA between markers', () => {
+      const sourceWithMarkers = `# Agent\n\nSome content\n\n# === PERSONA DNA ===\n\n## Identity\n- Name: Dex\n\n## Constraints\n- NEVER push\n\n# === ENHANCEMENT ===\n\n## Quick Commands\n- help\n`;
+      const dna = claudeNative.extractPersonaDNA(sourceWithMarkers);
+      expect(dna).toContain('## Identity');
+      expect(dna).toContain('## Constraints');
+      expect(dna).not.toContain('## Quick Commands');
+    });
+
+    it('extractPersonaDNA should fallback when no markers found', () => {
+      const sourceWithoutMarkers = `# Agent\n\n\`\`\`yaml\nagent:\n  name: Test\n\`\`\`\n\n---\n\nSome body content line 1\nSome body content line 2\n`;
+      const dna = claudeNative.extractPersonaDNA(sourceWithoutMarkers);
+      expect(typeof dna).toBe('string');
+    });
+
+    it('extractPersonaDNA should return empty string for empty input', () => {
+      expect(claudeNative.extractPersonaDNA('')).toBe('');
+      expect(claudeNative.extractPersonaDNA(null)).toBe('');
+    });
+
+    it('transform should include DNA markers in output for source with markers', () => {
+      // dev/dev.md now has PERSONA DNA and ENHANCEMENT markers
+      const result = claudeNative.transform(sampleAgent);
+      expect(result).toContain('=== PERSONA DNA ===');
+      expect(result).toContain('=== ENHANCEMENT ===');
+    });
+
+    it('transform should include frontmatter when source file has DNA markers', () => {
+      const result = claudeNative.transform(sampleAgent);
+      expect(result).toContain('name: dev');
+      expect(result).toContain('memory: project');
+      expect(result).toContain('model: sonnet');
     });
   });
 
