@@ -145,7 +145,7 @@ describe('Codex Skills Validator', () => {
   it('allows source-derived task skills in strict mode even when not catalog-listed', () => {
     syncSkills({ sourceDir, localSkillsDir: skillsDir, dryRun: false });
 
-    const taskSkillDir = path.join(skillsDir, 'aios-master-analyze-brownfield');
+    const taskSkillDir = path.join(skillsDir, 'architect-analyze-brownfield');
     fs.mkdirSync(taskSkillDir, { recursive: true });
     fs.writeFileSync(path.join(taskSkillDir, 'SKILL.md'), '# task skill', 'utf8');
 

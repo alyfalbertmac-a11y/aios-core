@@ -8,7 +8,7 @@
 # - File types for categorization
 #
 version: 4.2.13
-generated_at: "2026-02-20T17:51:01.653Z"
+generated_at: "2026-02-20T18:57:38.367Z"
 generator: scripts/generate-install-manifest.js
 file_count: 1048
 files:
@@ -1289,9 +1289,9 @@ files:
     type: script
     size: 7534
   - path: development/scripts/agent-config-loader.js
-    hash: sha256:53aa76c1711bb063e033876fcd420be9eadd2f58035ca2ea2fc43cdd7ca317c4
+    hash: sha256:9e5d84a0bec37071bbe89732459bed7ad864dc293c9e6caf5942c8fca494cdf4
     type: script
-    size: 18365
+    size: 18438
   - path: development/scripts/agent-exit-hooks.js
     hash: sha256:805ce1660ab1682327a7f5c372798f1927d6f7f0356b5b12d20eb4c8c6c32a4a
     type: script
@@ -2761,9 +2761,9 @@ files:
     type: script
     size: 3220
   - path: infrastructure/scripts/codex-skills-sync/validate.js
-    hash: sha256:d9be71db56ff7c7da1b4a2a4ed43b42f92dfe577b231a53bb5089c9544ace606
+    hash: sha256:ad6fe1635e84869db7c153ff611cf7318d3232eadd3bb97757a3448cc3e33400
     type: script
-    size: 10043
+    size: 10086
   - path: infrastructure/scripts/commit-message-generator.js
     hash: sha256:e1286241b9aa6d8918eb682bea331a8ba555341124b1e21c12cc44625ca90a6f
     type: script

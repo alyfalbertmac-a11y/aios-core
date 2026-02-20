@@ -181,14 +181,15 @@ function validateSkillContent(content, expected) {
   const issues = [];
   const requiredChecks = [
     { ok: content.includes(`name: ${expected.skillId}`), reason: `missing frontmatter name "${expected.skillId}"` },
+    // AGF-4: Skills are now self-contained with full YAML inline.
+    // Validate presence of activation-instructions and agent id in the YAML block.
     {
-      ok: content.includes(`.aios-core/development/agents/${expected.filename}`),
-      reason: `missing canonical agent path "${expected.filename}"`,
+      ok: content.includes('activation-instructions'),
+      reason: 'missing activation-instructions block',
     },
-    // generate-greeting.js removed — greeting is now inline in agent activation flow
     {
-      ok: content.includes('source of truth'),
-      reason: 'missing source-of-truth activation note',
+      ok: content.includes(`id: ${expected.agentId}`),
+      reason: `missing agent id "${expected.agentId}" in YAML block`,
     },
   ];
 
