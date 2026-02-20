@@ -78,6 +78,8 @@ function renderFrontmatter(data) {
 }
 
 /**
+ * @deprecated AGF-6: SYNAPSE runtime decoupled. Authority is now in .claude/rules/agent-{id}-authority.md.
+ * This function reads from deprecated .synapse/ directory. Preserved for rollback (1 sprint).
  * Read SYNAPSE agent domain file content.
  * Returns parsed authority + rules sections, or null if not found.
  */

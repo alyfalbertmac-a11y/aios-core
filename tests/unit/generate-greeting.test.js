@@ -26,7 +26,8 @@ const mockProjectStatus = {
   currentStory: 'story-6.1.4',
 };
 
-describe('generate-greeting.js', () => {
+// @deprecated AGF-6: generate-greeting.js deprecated — replaced by agent .md Enhancement section.
+describe.skip('generate-greeting.js', () => {
   describe('generateGreeting()', () => {
     it('should generate greeting for valid agent', async () => {
       // This is a smoke test - actual implementation would need mocking

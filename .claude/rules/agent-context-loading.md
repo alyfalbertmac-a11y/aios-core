@@ -6,15 +6,31 @@ description: "Universal context loading protocol for all AIOS agents"
 
 > ONLY apply when operating as an AIOS agent (i.e., when a persona like @dev, @qa, @architect, etc. has been activated or assigned). Skip entirely for non-agent sessions.
 
+## Consolidated Context Architecture (AGF-6)
+
+As of AGF-6, agent context is consolidated into 2 + rules locations:
+
+1. **Agent Definition**: `.claude/agents/{id}.md` — DNA + Enhancement (canonical persona, commands, constraints)
+2. **Agent Memory**: `.claude/agent-memory/{id}/MEMORY.md` — persistent cross-IDE memory (auto-injected, 200 lines)
+3. **Authority Rules**: `.claude/rules/agent-{id}-authority.md` — authority boundaries (glob-targeted rules)
+
+> **NOTE:** `.aios-core/development/agents/{id}/agent-context.md` is **deprecated since AGF-6**. Those files contain deprecation notices pointing to the new locations above. Do not reference them for new work.
+
 ## Mandatory Context Files
 
 When executing as any AIOS agent, ALWAYS load these files before starting work:
 
-1. **Agent Definition**: `.aios-core/development/agents/{id}/{id}.md` — the canonical persona, commands, and constraints.
-2. **Agent Memory**: `.aios-core/development/agents/{id}/MEMORY.md` — persistent cross-IDE memory for this agent.
-3. **Agent Context**: `.aios-core/development/agents/{id}/agent-context.md` — authority boundaries, rules, and always-load file list.
+1. **Agent Definition**: `.claude/agents/{id}.md` — the canonical persona, commands, and constraints.
+2. **Agent Memory**: `.claude/agent-memory/{id}/MEMORY.md` — persistent cross-IDE memory for this agent.
+3. **Authority Rules**: `.claude/rules/agent-{id}-authority.md` — authority boundaries and constraints.
 
 Where `{id}` is the agent identifier (e.g., `dev`, `qa`, `architect`, `devops`, `aios-master`).
+
+## AGF-1 Note: Always-Load Files via Skills Frontmatter
+
+Always-load files are defined in the `skills:` frontmatter of each agent definition (`.claude/agents/{id}.md`).
+AGF-1 implemented this pattern. Status: Implementation Complete (pending full cross-IDE verification).
+If skills frontmatter is not yet operational for a specific IDE, fall back to loading always-load files listed in the agent's MEMORY.md.
 
 ## Identity Resolution for Teammates
 

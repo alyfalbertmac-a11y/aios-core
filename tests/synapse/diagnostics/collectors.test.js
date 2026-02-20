@@ -60,7 +60,8 @@ function writeFile(filePath, content) {
 // hook-collector
 // ---------------------------------------------------------------------------
 
-describe('hook-collector: collectHookStatus', () => {
+// @deprecated AGF-6: SYNAPSE diagnostics deprecated. SYNAPSE-Lite is now active.
+describe.skip('hook-collector: collectHookStatus', () => {
   beforeEach(() => {
     tmpDir = createTmpDir();
   });

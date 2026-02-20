@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+/**
+ * @deprecated Since AGF-6 (2026-02-20). Replaced by user-prompt-submit.sh (AGF-5 SYNAPSE-Lite).
+ * The UserPromptSubmit hook is now bash-native (see .claude/hooks/user-prompt-submit.sh).
+ * This CJS wrapper is no longer active in .claude/settings.json.
+ * Preserved for rollback during 1 sprint. Remove after AGF-7 confirmation.
+ */
 // SYN-14: Boot time captured before ANY require — measures hook cold start
 const _BOOT_TIME = process.hrtime.bigint();
 'use strict';
