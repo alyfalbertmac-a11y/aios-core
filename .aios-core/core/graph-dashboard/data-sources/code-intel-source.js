@@ -7,6 +7,40 @@ const { RegistryLoader } = require('../../ids/registry-loader');
  * Data source that provides normalized graph data from code-intel
  * or falls back to entity-registry.yaml when provider is offline.
  */
+/**
+ * Classify a script entity into subcategory based on its path.
+ * @param {string} filePath - Entity path
+ * @returns {string} 'scripts/task' | 'scripts/engine' | 'scripts/infra'
+ */
+function _classifyScript(filePath) {
+  if (filePath.includes('/development/scripts/')) return 'scripts/task';
+  if (filePath.includes('/core/')) return 'scripts/engine';
+  if (filePath.includes('/infrastructure/')) return 'scripts/infra';
+  return 'scripts/task';
+}
+
+/**
+ * Detect fine-grained category from entity path and base category.
+ * @param {string} baseCategory - Original category from registry/provider
+ * @param {string} filePath - Entity path
+ * @returns {string} Refined category
+ */
+function _detectCategory(baseCategory, filePath) {
+  const path = (filePath || '').toLowerCase();
+
+  if (path.includes('/checklists/')) return 'checklists';
+  if (path.includes('/workflows/')) return 'workflows';
+  if (path.includes('/utils/')) return 'utils';
+  if (path.includes('/data/')) return 'data';
+  if (path.includes('/tools/')) return 'tools';
+
+  if (baseCategory === 'scripts' || path.includes('/scripts/')) {
+    return _classifyScript(path);
+  }
+
+  return baseCategory;
+}
+
 class CodeIntelSource {
   /**
    * @param {Object} [options]
@@ -110,7 +144,7 @@ class CodeIntelSource {
           label: dep.label || dep.name || id,
           type: dep.type || 'unknown',
           path: dep.path || '',
-          category: dep.category || dep.type || 'other',
+          category: _detectCategory(dep.category || dep.type || 'other', dep.path || ''),
         });
 
         for (const target of dep.dependencies || dep.deps || []) {
@@ -154,7 +188,7 @@ class CodeIntelSource {
           label: entityId,
           type: entity.type || category,
           path: entity.path || '',
-          category,
+          category: _detectCategory(category, entity.path || ''),
         });
 
         for (const dep of entity.dependencies || []) {
@@ -196,4 +230,4 @@ class CodeIntelSource {
   }
 }
 
-module.exports = { CodeIntelSource };
+module.exports = { CodeIntelSource, _classifyScript, _detectCategory };

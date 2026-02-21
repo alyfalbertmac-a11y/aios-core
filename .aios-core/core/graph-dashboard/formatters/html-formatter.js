@@ -1,10 +1,17 @@
 'use strict';
 
 const CATEGORY_COLORS = {
-  tasks: { color: '#4fc3f7', shape: 'box' },
   agents: { color: '#66bb6a', shape: 'dot' },
+  tasks: { color: '#4fc3f7', shape: 'box' },
   templates: { color: '#ffd54f', shape: 'diamond' },
-  scripts: { color: '#90a4ae', shape: 'box' },
+  checklists: { color: '#E69F00', shape: 'triangle' },
+  workflows: { color: '#CC79A7', shape: 'star' },
+  'scripts/task': { color: '#009E73', shape: 'box' },
+  'scripts/engine': { color: '#D55E00', shape: 'box' },
+  'scripts/infra': { color: '#90a4ae', shape: 'box' },
+  utils: { color: '#56B4E9', shape: 'ellipse' },
+  data: { color: '#F0E442', shape: 'database' },
+  tools: { color: '#b39ddb', shape: 'hexagon' },
 };
 
 const DEFAULT_COLOR = { color: '#b0bec5', shape: 'box' };
@@ -36,7 +43,9 @@ function _buildVisNodes(nodes) {
     seen.add(node.id);
 
     const category = (node.group || node.category || '').toLowerCase();
-    const style = CATEGORY_COLORS[category] || DEFAULT_COLOR;
+    const style = CATEGORY_COLORS[category]
+      || (category === 'scripts' ? CATEGORY_COLORS['scripts/task'] : null)
+      || DEFAULT_COLOR;
     const depsCount = node.dependencies ? node.dependencies.length : 0;
 
     acc.push({
@@ -73,8 +82,19 @@ function _buildVisEdges(edges) {
  * @returns {string} Legend HTML
  */
 function _buildLegend() {
+  const SHAPE_ICONS = {
+    dot: '&#9679;',
+    box: '&#9632;',
+    diamond: '&#9670;',
+    triangle: '&#9650;',
+    star: '&#9733;',
+    ellipse: '&#11044;',
+    database: '&#9707;',
+    hexagon: '&#11042;',
+  };
+
   const items = Object.entries(CATEGORY_COLORS).map(([name, style]) => {
-    const shapeIcon = style.shape === 'dot' ? '&#9679;' : style.shape === 'diamond' ? '&#9670;' : '&#9632;';
+    const shapeIcon = SHAPE_ICONS[style.shape] || '&#9632;';
     return `<span style="color:${style.color}">${shapeIcon}</span> ${name}`;
   });
 

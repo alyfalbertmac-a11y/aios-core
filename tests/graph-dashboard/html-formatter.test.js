@@ -58,13 +58,17 @@ describe('html-formatter', () => {
       expect(html).toContain('iterations: 100');
     });
 
-    it('should include legend with all categories', () => {
+    it('should include legend with all 11 categories', () => {
       const html = formatAsHtml(MOCK_GRAPH_DATA);
       expect(html).toContain('id="legend"');
-      expect(html).toContain('tasks');
-      expect(html).toContain('agents');
-      expect(html).toContain('templates');
-      expect(html).toContain('scripts');
+      const allCategories = [
+        'agents', 'tasks', 'templates', 'checklists', 'workflows',
+        'scripts/task', 'scripts/engine', 'scripts/infra',
+        'utils', 'data', 'tools',
+      ];
+      for (const cat of allCategories) {
+        expect(html).toContain(cat);
+      }
     });
 
     it('should generate valid HTML for empty graph', () => {
@@ -127,7 +131,7 @@ describe('html-formatter', () => {
       expect(tmplNode.shape).toBe(CATEGORY_COLORS.templates.shape);
 
       const scriptNode = nodes.find((n) => n.id === 'script-1');
-      expect(scriptNode.color).toBe(CATEGORY_COLORS.scripts.color);
+      expect(scriptNode.color).toBe(CATEGORY_COLORS['scripts/task'].color);
     });
 
     it('should include tooltip with path, type, and dependencies count', () => {
@@ -162,19 +166,66 @@ describe('html-formatter', () => {
     });
   });
 
-  describe('_buildLegend', () => {
-    it('should contain all category names', () => {
-      const legend = _buildLegend();
-      expect(legend).toContain('tasks');
-      expect(legend).toContain('agents');
-      expect(legend).toContain('templates');
-      expect(legend).toContain('scripts');
+  describe('_buildVisNodes - new categories', () => {
+    it('should apply correct styles for all 11 categories', () => {
+      const allCatNodes = [
+        { id: 'a1', label: 'a1', group: 'agents' },
+        { id: 't1', label: 't1', group: 'tasks' },
+        { id: 'tp1', label: 'tp1', group: 'templates' },
+        { id: 'cl1', label: 'cl1', group: 'checklists' },
+        { id: 'wf1', label: 'wf1', group: 'workflows' },
+        { id: 'st1', label: 'st1', group: 'scripts/task' },
+        { id: 'se1', label: 'se1', group: 'scripts/engine' },
+        { id: 'si1', label: 'si1', group: 'scripts/infra' },
+        { id: 'u1', label: 'u1', group: 'utils' },
+        { id: 'd1', label: 'd1', group: 'data' },
+        { id: 'to1', label: 'to1', group: 'tools' },
+      ];
+      const nodes = _buildVisNodes(allCatNodes);
+      expect(nodes).toHaveLength(11);
+
+      for (const node of nodes) {
+        const cat = allCatNodes.find((n) => n.id === node.id).group;
+        const expected = CATEGORY_COLORS[cat];
+        expect(node.color).toBe(expected.color);
+        expect(node.shape).toBe(expected.shape);
+      }
     });
 
-    it('should contain category colors', () => {
+    it('should map legacy "scripts" group to scripts/task fallback', () => {
+      const nodes = _buildVisNodes([{ id: 's', label: 's', group: 'scripts' }]);
+      expect(nodes[0].color).toBe(CATEGORY_COLORS['scripts/task'].color);
+      expect(nodes[0].shape).toBe(CATEGORY_COLORS['scripts/task'].shape);
+    });
+  });
+
+  describe('_buildLegend', () => {
+    it('should contain all 11 category names', () => {
       const legend = _buildLegend();
-      expect(legend).toContain(CATEGORY_COLORS.tasks.color);
-      expect(legend).toContain(CATEGORY_COLORS.agents.color);
+      const allCategories = [
+        'agents', 'tasks', 'templates', 'checklists', 'workflows',
+        'scripts/task', 'scripts/engine', 'scripts/infra',
+        'utils', 'data', 'tools',
+      ];
+      for (const cat of allCategories) {
+        expect(legend).toContain(cat);
+      }
+    });
+
+    it('should contain all category colors', () => {
+      const legend = _buildLegend();
+      for (const [, style] of Object.entries(CATEGORY_COLORS)) {
+        expect(legend).toContain(style.color);
+      }
+    });
+
+    it('should contain shape icons for each shape type', () => {
+      const legend = _buildLegend();
+      expect(legend).toContain('&#9679;');
+      expect(legend).toContain('&#9632;');
+      expect(legend).toContain('&#9670;');
+      expect(legend).toContain('&#9650;');
+      expect(legend).toContain('&#9733;');
     });
   });
 

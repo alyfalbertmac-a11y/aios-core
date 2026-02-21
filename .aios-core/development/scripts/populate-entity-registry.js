@@ -17,7 +17,10 @@ const SCAN_CONFIG = [
   { category: 'modules', basePath: '.aios-core/core', glob: '**/*.{js,mjs}', type: 'module' },
   { category: 'agents', basePath: '.aios-core/development/agents', glob: '**/*.{md,yaml,yml}', type: 'agent' },
   { category: 'checklists', basePath: '.aios-core/development/checklists', glob: '**/*.md', type: 'checklist' },
-  { category: 'data', basePath: '.aios-core/data', glob: '**/*.{yaml,yml,md}', type: 'data' }
+  { category: 'data', basePath: '.aios-core/data', glob: '**/*.{yaml,yml,md}', type: 'data' },
+  { category: 'workflows', basePath: '.aios-core/development/workflows', glob: '**/*.{yaml,yml}', type: 'workflow' },
+  { category: 'utils', basePath: '.aios-core/core/utils', glob: '**/*.js', type: 'util' },
+  { category: 'tools', basePath: '.aios-core/development/tools', glob: '**/*.{md,js,sh}', type: 'tool' }
 ];
 
 const ADAPTABILITY_DEFAULTS = {
@@ -27,7 +30,10 @@ const ADAPTABILITY_DEFAULTS = {
   checklist: 0.6,
   data: 0.5,
   script: 0.7,
-  task: 0.8
+  task: 0.8,
+  workflow: 0.4,
+  util: 0.6,
+  tool: 0.7
 };
 
 function computeChecksum(filePath) {
@@ -72,6 +78,142 @@ function extractPurpose(content, filePath) {
   }
 
   return `Entity at ${path.relative(REPO_ROOT, filePath)}`;
+}
+
+const YAML_DEP_FIELDS = {
+  agent: {
+    nested: ['tasks', 'templates', 'checklists', 'tools', 'scripts'],
+    arrayFields: [
+      { arrayPath: 'commands', field: 'task' },
+    ],
+  },
+  workflow: {
+    nested: [],
+    arrayFields: [
+      { arrayPath: 'phases', field: 'task' },
+      { arrayPath: 'phases', field: 'agent' },
+      { arrayPath: 'sequence', field: 'agent' },
+      { arrayPath: 'steps', field: 'task' },
+      { arrayPath: 'steps', field: 'uses' },
+    ],
+  },
+};
+
+const KNOWN_AGENTS = [
+  'dev', 'qa', 'pm', 'po', 'sm', 'architect', 'devops',
+  'analyst', 'data-engineer', 'ux-design-expert', 'aios-master'
+];
+
+// Pattern A: YAML dependency block items (- name.md)
+const YAML_BLOCK_RE = /^\s*[-*]\s+([\w.-]+\.(?:md|yaml|js))\s*$/gm;
+// Pattern B: Label list (- **Tasks:** a.md, b.md)
+const LABEL_LIST_RE = /^\s*[-*]\s+\*\*[\w\s]+:\*\*\s+(.+)$/gm;
+// Pattern C: Markdown links to entity files
+const MD_LINK_RE = /\[([^\]]+)\]\(([^)]+\.(?:md|yaml|js))\)/g;
+// Pattern D: Agent references
+const AGENT_REF_RE = new RegExp('@(' + KNOWN_AGENTS.join('|') + ')\\b', 'g');
+
+function extractYamlDependencies(filePath, entityType) {
+  const deps = new Set();
+  const fieldMap = YAML_DEP_FIELDS[entityType];
+  if (!fieldMap) return [];
+
+  let content;
+  try {
+    content = fs.readFileSync(filePath, 'utf8');
+  } catch {
+    return [];
+  }
+
+  let doc;
+  // For MD files, extract YAML from code blocks instead of parsing the whole file
+  if (path.extname(filePath) === '.md') {
+    const yamlBlockMatch = content.match(/```yaml\n([\s\S]*?)```/);
+    if (!yamlBlockMatch) return [];
+    try {
+      doc = yaml.load(yamlBlockMatch[1]);
+    } catch {
+      console.warn(`[IDS] YAML parse warning (embedded block): ${filePath} — skipping`);
+      return [];
+    }
+  } else {
+    try {
+      doc = yaml.load(content);
+    } catch {
+      console.warn(`[IDS] YAML parse warning: ${filePath} — skipping YAML extraction`);
+      return [];
+    }
+  }
+
+  if (!doc || typeof doc !== 'object') return [];
+
+  // Extract nested dependency fields (e.g., doc.dependencies.tasks)
+  const depsSection = doc.dependencies || {};
+  for (const field of fieldMap.nested) {
+    const items = depsSection[field];
+    if (Array.isArray(items)) {
+      for (const item of items) {
+        if (typeof item === 'string') {
+          const cleaned = item.replace(/#.*$/, '').trim();
+          if (cleaned) deps.add(cleaned.replace(/\.md$/, ''));
+        }
+      }
+    }
+  }
+
+  // Extract array fields (e.g., doc.commands[].task, doc.sequence[].agent)
+  for (const { arrayPath, field } of fieldMap.arrayFields) {
+    const arr = doc[arrayPath] || doc.workflow?.[arrayPath] || [];
+    if (Array.isArray(arr)) {
+      for (const item of arr) {
+        if (item && typeof item === 'object') {
+          const val = item[field];
+          if (typeof val === 'string' && val.trim()) {
+            deps.add(val.trim().replace(/\.md$/, ''));
+          }
+        }
+      }
+    }
+  }
+
+  return [...deps];
+}
+
+function extractMarkdownCrossReferences(content, entityId) {
+  const deps = new Set();
+
+  // Pattern A: YAML block items (- filename.md)
+  let match;
+  while ((match = YAML_BLOCK_RE.exec(content)) !== null) {
+    const ref = match[1].replace(/\.md$/, '');
+    if (ref !== entityId) deps.add(ref);
+  }
+
+  // Pattern B: Label lists (- **Tasks:** a.md, b.md)
+  while ((match = LABEL_LIST_RE.exec(content)) !== null) {
+    const items = match[1].split(/[,;]\s*/);
+    for (const item of items) {
+      const fileMatch = item.trim().match(/([\w.-]+\.(?:md|yaml|js))/);
+      if (fileMatch) {
+        const ref = fileMatch[1].replace(/\.md$/, '');
+        if (ref !== entityId) deps.add(ref);
+      }
+    }
+  }
+
+  // Pattern C: Markdown links to entity files
+  while ((match = MD_LINK_RE.exec(content)) !== null) {
+    const linkPath = match[2];
+    const basename = path.basename(linkPath, path.extname(linkPath));
+    if (basename !== entityId) deps.add(basename);
+  }
+
+  // Pattern D: Agent references (@dev, @qa, etc.)
+  while ((match = AGENT_REF_RE.exec(content)) !== null) {
+    deps.add(match[1]);
+  }
+
+  return [...deps];
 }
 
 function detectDependencies(content, entityId) {
@@ -141,7 +283,23 @@ function scanCategory(config) {
     const relPath = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
     const keywords = extractKeywords(filePath, content);
     const purpose = extractPurpose(content, filePath);
-    const dependencies = detectDependencies(content, entityId);
+    const baseDeps = detectDependencies(content, entityId);
+
+    // Semantic YAML extraction for agents and workflows
+    const yamlCategories = ['agents', 'workflows'];
+    const yamlDeps = yamlCategories.includes(config.category)
+      ? extractYamlDependencies(filePath, config.type)
+      : [];
+
+    // Markdown cross-reference extraction for tasks, checklists, templates
+    const mdCategories = ['tasks', 'checklists', 'templates'];
+    const mdDeps = mdCategories.includes(config.category)
+      ? extractMarkdownCrossReferences(content, entityId)
+      : [];
+
+    // Merge all dependencies (deduplicated)
+    const allDeps = new Set([...baseDeps, ...yamlDeps, ...mdDeps]);
+    const dependencies = [...allDeps];
     const checksum = computeChecksum(filePath);
     const defaultScore = ADAPTABILITY_DEFAULTS[config.type] || 0.5;
 
@@ -166,19 +324,38 @@ function scanCategory(config) {
 }
 
 function resolveUsedBy(allEntities) {
-  const idToCategory = {};
+  // Build name index: maps entity IDs, filenames, and basenames to [category, id]
+  const nameIndex = new Map();
   for (const [category, entities] of Object.entries(allEntities)) {
-    for (const id of Object.keys(entities)) {
-      idToCategory[id] = category;
+    for (const [id, entity] of Object.entries(entities)) {
+      nameIndex.set(id, { category, id });
+      if (entity.path) {
+        const filename = entity.path.split('/').pop();
+        if (!nameIndex.has(filename)) {
+          nameIndex.set(filename, { category, id });
+        }
+        const basename = filename.replace(/\.[^.]+$/, '');
+        if (!nameIndex.has(basename)) {
+          nameIndex.set(basename, { category, id });
+        }
+      }
     }
   }
 
+  // Reset usedBy to avoid duplicates on re-scan
+  for (const entities of Object.values(allEntities)) {
+    for (const entity of Object.values(entities)) {
+      entity.usedBy = [];
+    }
+  }
+
+  // Build reverse references
   for (const [category, entities] of Object.entries(allEntities)) {
     for (const [entityId, entity] of Object.entries(entities)) {
-      for (const depId of entity.dependencies) {
-        const depCategory = idToCategory[depId];
-        if (depCategory && allEntities[depCategory][depId]) {
-          const usedBy = allEntities[depCategory][depId].usedBy;
+      for (const depRef of entity.dependencies) {
+        const target = nameIndex.get(depRef);
+        if (target && allEntities[target.category] && allEntities[target.category][target.id]) {
+          const usedBy = allEntities[target.category][target.id].usedBy;
           if (!usedBy.includes(entityId)) {
             usedBy.push(entityId);
           }
@@ -248,7 +425,10 @@ function getCategoryDescription(category) {
     modules: 'Core framework modules and libraries',
     agents: 'Agent persona definitions and configurations',
     checklists: 'Validation and review checklists',
-    data: 'Configuration and reference data files'
+    data: 'Configuration and reference data files',
+    workflows: 'Multi-phase orchestration workflows',
+    utils: 'Shared utility libraries and helpers',
+    tools: 'Development tool definitions and configurations'
   };
   return descriptions[category] || category;
 }
@@ -271,10 +451,14 @@ module.exports = {
   extractKeywords,
   extractPurpose,
   detectDependencies,
+  extractYamlDependencies,
+  extractMarkdownCrossReferences,
   computeChecksum,
   resolveUsedBy,
   SCAN_CONFIG,
   ADAPTABILITY_DEFAULTS,
+  YAML_DEP_FIELDS,
+  KNOWN_AGENTS,
   REPO_ROOT,
   REGISTRY_PATH
 };

@@ -19,7 +19,7 @@ jest.mock('../../.aios-core/core/ids/registry-loader', () => ({
   })),
 }));
 
-const { CodeIntelSource } = require('../../.aios-core/core/graph-dashboard/data-sources/code-intel-source');
+const { CodeIntelSource, _classifyScript, _detectCategory } = require('../../.aios-core/core/graph-dashboard/data-sources/code-intel-source');
 
 describe('CodeIntelSource', () => {
   let source;
@@ -192,6 +192,88 @@ describe('CodeIntelSource', () => {
       expect(result.nodes).toEqual([]);
       expect(result.edges).toEqual([]);
       expect(result.isFallback).toBe(true);
+    });
+  });
+
+  describe('_classifyScript', () => {
+    it('should classify development scripts as scripts/task', () => {
+      expect(_classifyScript('.aios-core/development/scripts/build.js')).toBe('scripts/task');
+    });
+
+    it('should classify core scripts as scripts/engine', () => {
+      expect(_classifyScript('.aios-core/core/graph-dashboard/cli.js')).toBe('scripts/engine');
+    });
+
+    it('should classify infrastructure scripts as scripts/infra', () => {
+      expect(_classifyScript('.aios-core/infrastructure/ci/deploy.js')).toBe('scripts/infra');
+    });
+
+    it('should default to scripts/task for unknown paths', () => {
+      expect(_classifyScript('some/random/script.js')).toBe('scripts/task');
+    });
+  });
+
+  describe('_detectCategory', () => {
+    it('should detect checklists from path', () => {
+      expect(_detectCategory('other', '.aios-core/development/checklists/pre-push.md')).toBe('checklists');
+    });
+
+    it('should detect workflows from path', () => {
+      expect(_detectCategory('other', '.aios-core/development/workflows/deploy.yaml')).toBe('workflows');
+    });
+
+    it('should detect utils from path', () => {
+      expect(_detectCategory('other', '.aios-core/utils/helper.js')).toBe('utils');
+    });
+
+    it('should detect data from path', () => {
+      expect(_detectCategory('other', '.aios-core/data/entity-registry.yaml')).toBe('data');
+    });
+
+    it('should detect tools from path', () => {
+      expect(_detectCategory('other', '.aios-core/development/tools/coderabbit.md')).toBe('tools');
+    });
+
+    it('should subcategorize scripts by directory', () => {
+      expect(_detectCategory('scripts', '.aios-core/development/scripts/build.js')).toBe('scripts/task');
+      expect(_detectCategory('scripts', '.aios-core/core/code-intel/index.js')).toBe('scripts/engine');
+      expect(_detectCategory('scripts', '.aios-core/infrastructure/ci/lint.js')).toBe('scripts/infra');
+    });
+
+    it('should return base category when no path match', () => {
+      expect(_detectCategory('agents', '.aios-core/development/agents/dev.md')).toBe('agents');
+      expect(_detectCategory('tasks', '.aios-core/development/tasks/build.md')).toBe('tasks');
+    });
+
+    it('should handle empty path gracefully', () => {
+      expect(_detectCategory('agents', '')).toBe('agents');
+      expect(_detectCategory('tasks', undefined)).toBe('tasks');
+    });
+  });
+
+  describe('getData - category detection in registry', () => {
+    it('should apply _detectCategory to registry entities', async () => {
+      mockRegistryData = {
+        metadata: { entityCount: 2 },
+        entities: {
+          scripts: {
+            'build-script': { path: '.aios-core/development/scripts/build.js', type: 'script', dependencies: [] },
+            'engine-script': { path: '.aios-core/core/graph-dashboard/cli.js', type: 'script', dependencies: [] },
+          },
+          other: {
+            'my-checklist': { path: '.aios-core/development/checklists/pre-push.md', type: 'checklist', dependencies: [] },
+          },
+        },
+      };
+
+      const result = await source.getData();
+      const buildNode = result.nodes.find((n) => n.id === 'build-script');
+      const engineNode = result.nodes.find((n) => n.id === 'engine-script');
+      const checklistNode = result.nodes.find((n) => n.id === 'my-checklist');
+
+      expect(buildNode.category).toBe('scripts/task');
+      expect(engineNode.category).toBe('scripts/engine');
+      expect(checklistNode.category).toBe('checklists');
     });
   });
 
