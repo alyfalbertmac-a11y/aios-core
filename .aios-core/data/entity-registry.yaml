@@ -1,7 +1,7 @@
 metadata:
   version: 1.0.0
-  lastUpdated: '2026-02-21T03:03:01.120Z'
-  entityCount: 515
+  lastUpdated: '2026-02-21T03:32:38.969Z'
+  entityCount: 516
   checksumAlgorithm: sha256
 entities:
   tasks:
@@ -1610,13 +1610,15 @@ entities:
       usedBy: []
       dependencies:
         - repository-detector
+        - devops-helper
+        - code-intel
         - N/A
       adaptability:
         score: 0.8
         constraints: []
         extensionPoints: []
-      checksum: sha256:907476b248dc063e8bbd48bb884fa667dca93f6469394500e4ad567aa33953ba
-      lastVerified: '2026-02-08T13:33:24.202Z'
+      checksum: sha256:a22ce2681c4713fecbff8dc0d3fba0ac5e139cb9469884914bb293dad49dbd82
+      lastVerified: '2026-02-21T03:32:38.968Z'
     github-devops-pre-push-quality-gate:
       path: .aios-core/development/tasks/github-devops-pre-push-quality-gate.md
       type: task
@@ -1633,13 +1635,15 @@ entities:
         - publish-npm
       dependencies:
         - repository-detector
+        - devops-helper
+        - code-intel
         - N/A
       adaptability:
         score: 0.8
         constraints: []
         extensionPoints: []
-      checksum: sha256:5466ed17c850945f4418ec8911a269ca90e2fb7d6fef80beab2cadf3abc0dbd5
-      lastVerified: '2026-02-08T13:33:24.203Z'
+      checksum: sha256:0bba5a9e3eb06f10495ee94614acaa9b5723a0177641300b154d40766d467f76
+      lastVerified: '2026-02-21T03:32:38.968Z'
     github-devops-repository-cleanup:
       path: .aios-core/development/tasks/github-devops-repository-cleanup.md
       type: task
@@ -6113,17 +6117,32 @@ entities:
     devops-helper:
       path: .aios-core/core/code-intel/helpers/devops-helper.js
       type: module
-      purpose: Code intelligence helper for @devops agent — pre-push impact analysis and PR enrichment
+      purpose: 'string, testCoverage: Array|null}|null>} Impact summary or null'
       keywords:
         - devops
         - helper
-        - impact
-        - blast-radius
-        - pre-push
-        - pr-enrichment
       usedBy:
-        - github-devops-pre-push-quality-gate
         - github-devops-github-pr-automation
+        - github-devops-pre-push-quality-gate
+      dependencies:
+        - index
+      adaptability:
+        score: 0.4
+        constraints: []
+        extensionPoints: []
+      checksum: sha256:c40cfa9ac2f554a707ff68c7709ae436349041bf00ad2f42811ccbe8ba842462
+      lastVerified: '2026-02-21T03:32:38.967Z'
+    creation-helper:
+      path: .aios-core/core/code-intel/helpers/creation-helper.js
+      type: module
+      purpose: Code intelligence helper for squad-creator and artefact creation tasks
+      keywords:
+        - creation
+        - helper
+        - squad-creator
+        - code-intel
+      usedBy:
+        - registry-updater
       dependencies:
         - index
       adaptability:
@@ -6186,6 +6205,7 @@ entities:
         - qa-helper
         - planning-helper
         - story-helper
+        - devops-helper
       dependencies:
         - registry-loader
         - incremental-decision-engine

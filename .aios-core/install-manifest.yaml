@@ -8,9 +8,9 @@
 # - File types for categorization
 #
 version: 4.2.13
-generated_at: "2026-02-21T03:32:32.778Z"
+generated_at: "2026-02-21T04:06:33.680Z"
 generator: scripts/generate-install-manifest.js
-file_count: 1011
+file_count: 1013
 files:
   - path: cli/commands/config/index.js
     hash: sha256:ebcad2ce3807eda29dcddff76d7a95ddc9b7fa160df21fd608f94b802237e862
@@ -188,6 +188,10 @@ files:
     hash: sha256:0bea0c1953a21621afbb4c9755e782842940cf54cdc88a4318dd7242f1fb02a8
     type: core
     size: 4320
+  - path: core/code-intel/helpers/creation-helper.js
+    hash: sha256:e674fdbe6979dbe961853f080d5971ba264dee23ab70abafcc21ee99356206e7
+    type: core
+    size: 5637
   - path: core/code-intel/helpers/dev-helper.js
     hash: sha256:2418a5f541003c73cc284e88a6b0cb666896a47ffd5ed4c08648269d281efc4c
     type: core
@@ -593,9 +597,9 @@ files:
     type: core
     size: 8096
   - path: core/ids/registry-updater.js
-    hash: sha256:6d87ec21d32acff1ba9b9d13025118c106ce6db59c1339c3a6ef4b2a02fd7f52
+    hash: sha256:09dd5709f5a6462a8e048dcbb65ec33f3b7a0c845d0e4b97d1ce1463a9d3e746
     type: core
-    size: 22362
+    size: 24425
   - path: core/ids/verification-gate.js
     hash: sha256:96050661c90fa52bfc755911d02c9194ec35c00e71fc6bbc92a13686dd53bb91
     type: core
@@ -1061,9 +1065,9 @@ files:
     type: data
     size: 34251
   - path: data/entity-registry.yaml
-    hash: sha256:fef8dd82dd7b2ca8c692d279e4fcb6dfcd8ec9c0228abaa6e34fdfcac39e9323
+    hash: sha256:fb1a5f920761d4300ca285f67e4114eb9e555113f55d209c3f2375b8c2b48117
     type: data
-    size: 295648
+    size: 296247
   - path: data/learned-patterns.yaml
     hash: sha256:24ac0b160615583a0ff783d3da8af80b7f94191575d6db2054ec8e10a3f945dc
     type: data
@@ -2280,6 +2284,10 @@ files:
     hash: sha256:755abbb43aacb901a07dd2b66574f7d5a0750bf4f18e59f58fe52c35e61de8c1
     type: template
     size: 8230
+  - path: development/templates/code-intel-integration-pattern.md
+    hash: sha256:a4018ffc06633c4f829e12df881ac1934f5919400dd518ace7f8079e52db6549
+    type: template
+    size: 6390
   - path: development/templates/research-prompt-tmpl.md
     hash: sha256:000676982a6f1a22559a673102949604d6b97354356ab1891815ba18e0e72c30
     type: template
@@ -2357,9 +2365,9 @@ files:
     type: workflow
     size: 1173
   - path: development/templates/squad/agent-template.md
-    hash: sha256:b8ba4621f0bf03bf3612a683cebaa52e246cba19fb81197493ec4d682a1db14b
+    hash: sha256:1b4c081953a4eb4821a3920d8fbe80c54b9582f0b1100528af6466f24f201499
     type: template
-    size: 1432
+    size: 1743
   - path: development/templates/squad/checklist-template.md
     hash: sha256:5c962f20d7d56ef8800f60dc32f8105b2669311664cfd330301f812dc67934af
     type: template
@@ -2373,9 +2381,9 @@ files:
     type: template
     size: 3375
   - path: development/templates/squad/task-template.md
-    hash: sha256:3f337082a14cd33dd4876d5dc487d0ec069dad5f54aeaac9853b2a13051a70db
+    hash: sha256:049a90eadee3efbfef9b605ce01684ae8c83de1478590469578d9e9bf2ef6c44
     type: template
-    size: 1882
+    size: 2580
   - path: development/templates/squad/template-template.md
     hash: sha256:b3f13da1cd377d18d3202bd8998fd9f26ad56b5da4b63e316cd01578998b7f55
     type: template
