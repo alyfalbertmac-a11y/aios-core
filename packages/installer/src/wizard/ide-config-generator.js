@@ -253,6 +253,23 @@ async function copyAgentFiles(projectRoot, agentFolder, ideConfig = null) {
         const agentTargetPath = path.join(agentsDir, file);
         await fs.copy(sourcePath, agentTargetPath);
         copiedFiles.push(agentTargetPath);
+      } else if (ideConfig && ideConfig.agentFolder && ideConfig.agentFolder.includes('.github')) {
+        // GitHub Copilot: apply transformer for .agent.md format with YAML frontmatter
+        try {
+          const agentParser = require('../../../../.aios-core/infrastructure/scripts/ide-sync/agent-parser');
+          const copilotTransformer = require('../../../../.aios-core/infrastructure/scripts/ide-sync/transformers/github-copilot');
+          const agentData = agentParser.parseAgentFile(sourcePath);
+          const content = copilotTransformer.transform(agentData);
+          const filename = copilotTransformer.getFilename(agentData);
+          const targetPath = path.join(targetDir, filename);
+          await fs.writeFile(targetPath, content, 'utf8');
+          copiedFiles.push(targetPath);
+        } catch (transformError) {
+          // Fallback: copy raw file with .agent.md extension
+          const targetPath = path.join(targetDir, `${agentName}.agent.md`);
+          await fs.copy(sourcePath, targetPath);
+          copiedFiles.push(targetPath);
+        }
       } else {
         // Normal copy for other IDEs
         const targetPath = path.join(targetDir, file);
