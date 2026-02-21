@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Ready
 
 ## Executor Assignment
 
@@ -71,10 +71,11 @@ quality_gate_tools: ["jest", "eslint", "coderabbit"]
 
 - [ ] **Task 1: Scaffold extensao VS Code** (AC: 1, 9)
   - [ ] 1.1 Criar diretorio `packages/vscode-graph-viewer/`
-  - [ ] 1.2 Inicializar com `yo code` ou manualmente (package.json, tsconfig, etc.)
+  - [ ] 1.2 Inicializar manualmente (package.json com `engines.vscode`, tsconfig, esbuild config)
   - [ ] 1.3 Configurar `activationEvents`: `onCommand:aios.openGraphViewer`
   - [ ] 1.4 Registrar comando `AIOS: Open Graph Viewer` em `contributes.commands`
-  - [ ] 1.5 Adicionar icon e README para marketplace
+  - [ ] 1.5 Adicionar icon (usar SVG simples do grafo) e README para marketplace
+  - [ ] 1.6 Configurar `.vscodeignore` para excluir source files do package
 
 - [ ] **Task 2: Implementar Webview Panel** (AC: 2, 8)
   - [ ] 2.1 Criar `src/extension.ts` com `registerCommand` que abre `WebviewPanel`
@@ -85,12 +86,14 @@ quality_gate_tools: ["jest", "eslint", "coderabbit"]
   - [ ] 2.6 Detectar tema VS Code (dark/light) e aplicar palette correspondente
 
 - [ ] **Task 3: Data Loading e File Watcher** (AC: 3, 4)
-  - [ ] 3.1 No extension host: ler `.aios/graph.json` via `fs.readFileSync`
-  - [ ] 3.2 Transformar JSON para formato Cytoscape: `{ elements: [{ data: {id, label} }, { data: {source, target} }] }`
-  - [ ] 3.3 Enviar dados para webview via `panel.webview.postMessage({ type: 'updateGraph', data })`
-  - [ ] 3.4 Criar `fs.watch` em `.aios/graph.json` para detectar mudancas
-  - [ ] 3.5 On change: re-ler JSON, re-enviar postMessage (webview atualiza sem reload)
-  - [ ] 3.6 Fallback: se `.aios/graph.json` nao existe, executar `aios graph --deps --format=json` via child_process
+  - [ ] 3.1 No extension host: ler `.aios/graph.json` via `vscode.workspace.fs.readFile` (API nativa VS Code)
+  - [ ] 3.2 Criar funcao `transformToCytoscape(graphData)` que converte nosso JSON para formato Cytoscape
+  - [ ] 3.3 Transformacao: nodes → `{ data: {id, label, category} }`, edges → `{ data: {id, source, target} }` (rename from→source, to→target)
+  - [ ] 3.4 Enviar dados para webview via `panel.webview.postMessage({ type: 'updateGraph', elements })`
+  - [ ] 3.5 Criar `vscode.workspace.createFileSystemWatcher('**/.aios/graph.json')` para detectar mudancas
+  - [ ] 3.6 On change: re-ler JSON, re-transformar, re-enviar postMessage (webview atualiza sem reload)
+  - [ ] 3.7 Fallback: se `.aios/graph.json` nao existe, executar `aios graph --deps --format=json --output .aios/graph.json` via Terminal API
+  - [ ] 3.8 Dispose watcher no `deactivate()` da extensao
 
 - [ ] **Task 4: Interatividade do Grafo** (AC: 5, 6, 7)
   - [ ] 4.1 Configurar layout dagre: `{ name: 'dagre', rankDir: 'TB', nodeSep: 50, rankSep: 100 }`
@@ -162,8 +165,8 @@ Extension Host (Node.js)          Webview (Browser)
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",
-    "esbuild": "^0.20.0",
-    "vsce": "^2.15.0"
+    "esbuild": "^0.24.0",
+    "@vscode/vsce": "^3.0.0"
   }
 }
 ```
@@ -191,7 +194,17 @@ ZenML usa exatamente este padrao (React + dagrejs + ReactFlow em webview) para v
 
 **Complexity:** High
 **Estimation:** 2-4 dias
-**Dependencies:** GD-4 (watch mode) e GD-5 (HTML formatter) como base
+**Dependencies:** GD-4 (watch mode gera `.aios/graph.json`) e GD-5 (HTML formatter como referencia de styling)
+
+### Riscos e Mitigacao
+
+| Risco | Probabilidade | Mitigacao |
+|-------|--------------|-----------|
+| CSP bloqueia Cytoscape no webview | Media | Task 2.5 configura CSP explicitamente com `webview.cspSource` |
+| `retainContextWhenHidden` consome muita memoria | Baixa | Aceitavel para MVP; monitor e otimizar se reportado |
+| `vsce` deprecated em favor de `@vscode/vsce` | Media | Usar `@vscode/vsce` (package atualizado). Verificar versao no npm |
+| Cytoscape layout lento com 500+ nodes | Media | Dagre layout e O(V+E); limitar `maxZoom`, usar `animate: false` no initial render |
+| `.aios/graph.json` nao existe ao abrir extensao | Alta | Task 3.7 fallback gera o arquivo automaticamente |
 
 ## Testing
 
@@ -221,6 +234,7 @@ vsce package
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-02-21 | @devops (Gage) | Story created from research |
+| 1.1 | 2026-02-21 | @po (Pax) | Validated GO. Used VS Code native APIs (workspace.fs, createFileSystemWatcher). Fixed vsce→@vscode/vsce. Added risks, dispose watcher, .vscodeignore. Detailed Task 3 transform. Status Draft → Ready |
 
 ## QA Results
 (to be filled by @qa)

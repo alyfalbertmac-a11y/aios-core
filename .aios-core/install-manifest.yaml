@@ -8,7 +8,7 @@
 # - File types for categorization
 #
 version: 4.2.13
-generated_at: "2026-02-21T14:13:53.860Z"
+generated_at: "2026-02-21T14:34:02.509Z"
 generator: scripts/generate-install-manifest.js
 file_count: 1027
 files:
@@ -349,9 +349,9 @@ files:
     type: core
     size: 11060
   - path: core/graph-dashboard/cli.js
-    hash: sha256:a25c466dd2837db29638d8180c8f334b41b7bd08eebb17178732a75643d6ade0
+    hash: sha256:93b2d9dca77a156cb15c0ab4f92609ddc3f7e2cff59caa8db0409449ecb4f6b9
     type: core
-    size: 5563
+    size: 8553
   - path: core/graph-dashboard/data-sources/code-intel-source.js
     hash: sha256:c3679ef97f08753915bbf8583e8aec4b560db9516f4eced50ee7fe13e8961deb
     type: core
@@ -1109,9 +1109,9 @@ files:
     type: data
     size: 34235
   - path: data/entity-registry.yaml
-    hash: sha256:4bca5c53d44d4459d106d0901aff2cd82d2cd4b0ba5dd724f98c15a2e026fb95
+    hash: sha256:c5d149e6b49d8ff09989d2c2d17aa8c4371b6dde683eae29630368fb40ab4484
     type: data
-    size: 302368
+    size: 303470
   - path: data/learned-patterns.yaml
     hash: sha256:24ac0b160615583a0ff783d3da8af80b7f94191575d6db2054ec8e10a3f945dc
     type: data

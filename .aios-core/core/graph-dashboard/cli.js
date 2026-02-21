@@ -10,7 +10,12 @@ const { formatAsJson } = require('./formatters/json-formatter');
 const { formatAsDot } = require('./formatters/dot-formatter');
 const { formatAsMermaid } = require('./formatters/mermaid-formatter');
 
+const fs = require('fs');
+const path = require('path');
+
 const MAX_SUMMARY_PER_CATEGORY = 5;
+const DEFAULT_WATCH_INTERVAL_MS = 5000;
+const DEBOUNCE_MS = 300;
 
 const FORMAT_MAP = {
   json: formatAsJson,
@@ -19,6 +24,11 @@ const FORMAT_MAP = {
 };
 
 const VALID_FORMATS = ['ascii', ...Object.keys(FORMAT_MAP)];
+
+const WATCH_FORMAT_MAP = {
+  dot: { formatter: formatAsDot, filename: 'graph.dot' },
+  mermaid: { formatter: formatAsMermaid, filename: 'graph.mmd' },
+};
 
 const COMMANDS = {
   '--deps': handleDeps,
@@ -38,6 +48,7 @@ function parseArgs(argv) {
     format: 'ascii',
     file: null,
     interval: 5,
+    watch: false,
     help: false,
   };
 
@@ -51,12 +62,16 @@ function parseArgs(argv) {
       args.command = '--deps';
     } else if (arg === '--stats') {
       args.command = '--stats';
+    } else if (arg === '--watch') {
+      args.watch = true;
     } else if (arg === '--format' && i + 1 < argv.length) {
       args.format = argv[++i];
     } else if (arg.startsWith('--format=')) {
       args.format = arg.split('=')[1];
     } else if (arg === '--interval' && i + 1 < argv.length) {
       args.interval = parseInt(argv[++i], 10);
+    } else if (arg.startsWith('--interval=')) {
+      args.interval = parseInt(arg.split('=')[1], 10);
     } else if (arg.startsWith('--') && !args.command) {
       args.command = arg;
     }
@@ -67,6 +82,7 @@ function parseArgs(argv) {
 
 /**
  * Handle --deps command: render dependency tree or formatted output.
+ * If --watch is set, delegates to handleWatch.
  * @param {Object} args - Parsed CLI args
  */
 async function handleDeps(args) {
@@ -75,6 +91,10 @@ async function handleDeps(args) {
   if (format !== 'ascii' && !FORMAT_MAP[format]) {
     console.error(`Unknown format: ${format}. Valid formats: ${VALID_FORMATS.join(', ')}`);
     process.exit(1);
+  }
+
+  if (args.watch) {
+    return handleWatch(args);
   }
 
   const source = new CodeIntelSource();
@@ -89,6 +109,75 @@ async function handleDeps(args) {
   const isTTY = process.stdout.isTTY;
   const output = renderTree(graphData, { color: isTTY, unicode: isTTY });
   console.log(output);
+}
+
+/**
+ * Handle --watch mode: regenerate graph file on interval and on file changes.
+ * Writes to .aios/graph.dot (or .aios/graph.mmd if --format=mermaid).
+ * @param {Object} args - Parsed CLI args
+ * @returns {Object} Watch state for cleanup (used by tests)
+ */
+async function handleWatch(args) {
+  const watchFormat = args.format === 'mermaid' ? 'mermaid' : 'dot';
+  const { formatter, filename } = WATCH_FORMAT_MAP[watchFormat];
+  const intervalMs = (args.interval || 5) * 1000;
+  const outputDir = path.resolve(process.cwd(), '.aios');
+  const outputPath = path.join(outputDir, filename);
+
+  fs.mkdirSync(outputDir, { recursive: true });
+
+  const source = new CodeIntelSource();
+
+  async function regenerate() {
+    try {
+      const graphData = await source.getData();
+      const content = formatter(graphData);
+      fs.writeFileSync(outputPath, content, 'utf8');
+      const nodeCount = (graphData.nodes || []).length;
+      console.log(`[watch] ${filename} updated (${nodeCount} entities)`);
+    } catch (err) {
+      console.error(`[watch] regeneration failed: ${err.message}`);
+    }
+  }
+
+  await regenerate();
+
+  const intervalId = setInterval(regenerate, intervalMs);
+
+  let fileWatcher = null;
+  let debounceTimer = null;
+  const registryPath = path.resolve(process.cwd(), '.aios-core/data/entity-registry.yaml');
+
+  try {
+    if (fs.existsSync(registryPath)) {
+      fileWatcher = fs.watch(registryPath, () => {
+        if (debounceTimer) {
+          clearTimeout(debounceTimer);
+        }
+        debounceTimer = setTimeout(regenerate, DEBOUNCE_MS);
+      });
+    }
+  } catch (_err) {
+    // fs.watch not available or path inaccessible; interval-only mode
+  }
+
+  function cleanup() {
+    clearInterval(intervalId);
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    if (fileWatcher) {
+      fileWatcher.close();
+    }
+    console.log('[watch] stopped');
+  }
+
+  process.once('SIGINT', () => {
+    cleanup();
+    process.exit(0);
+  });
+
+  return { intervalId, fileWatcher, cleanup, outputPath };
 }
 
 /**
@@ -122,12 +211,16 @@ Commands:
 
 Options:
   --format=FORMAT Output format: ascii (default), json, dot, mermaid
+  --watch         Live mode: regenerate .aios/graph.dot (or .mmd) on interval
+  --interval=N    Seconds between regeneration in watch mode (default: 5)
 
 Examples:
-  aios graph --deps                 Show dependency tree
-  aios graph --deps --format=json   Output as JSON
-  aios graph --stats                Show entity stats and cache metrics
-  aios graph --stats | head -10     Pipe-friendly stats output
+  aios graph --deps                        Show dependency tree
+  aios graph --deps --format=json          Output as JSON
+  aios graph --deps --watch                Live DOT file for VS Code preview
+  aios graph --deps --watch --format=mermaid  Live Mermaid file
+  aios graph --deps --watch --interval=10  Refresh every 10 seconds
+  aios graph --stats                       Show entity stats and cache metrics
 `.trim();
 
   console.log(usage);
@@ -205,8 +298,12 @@ module.exports = {
   handleDeps,
   handleStats,
   handleHelp,
+  handleWatch,
   handleSummary,
   MAX_SUMMARY_PER_CATEGORY,
+  DEFAULT_WATCH_INTERVAL_MS,
+  DEBOUNCE_MS,
   FORMAT_MAP,
   VALID_FORMATS,
+  WATCH_FORMAT_MAP,
 };

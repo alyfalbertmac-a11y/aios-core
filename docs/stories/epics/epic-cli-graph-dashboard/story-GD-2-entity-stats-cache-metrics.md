@@ -2,7 +2,7 @@
 
 ## Status
 
-Ready for Review
+Done
 
 ## Executor Assignment
 
@@ -246,6 +246,8 @@ const chart = asciichart.plot(data, { height: 4, padding: '  ' });
 | 2026-02-21 | 1.1 | PO validation: NO-GO (7/10) → fixes applied: quality_gate @qa→@architect, removed DataSource hallucination, added Scope, harmonized severity filter, added COMMANDS map subtask, enriched Dev Notes | Pax (@po) |
 | 2026-02-21 | 1.2 | Re-validation: GO (9/10) — all criticals resolved, Draft → Ready | Pax (@po) |
 | 2026-02-21 | 2.0 | Implementation complete: all 7 tasks done, 84 tests passing, lint clean, CLI verified | Dex (@dev) |
+| 2026-02-21 | 2.1 | QA Gate PASS (95/100). Observations O1-O3 resolved. 86 tests passing. | Quinn (@qa) |
+| 2026-02-21 | 3.0 | Story closed. Commit 0384ddf7 pushed to feat/epic-nogic-code-intelligence. Status → Done. | Pax (@po) |
 
 ## Dev Agent Record
 

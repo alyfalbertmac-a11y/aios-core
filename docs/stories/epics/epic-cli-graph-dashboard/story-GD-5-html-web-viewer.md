@@ -2,7 +2,7 @@
 
 ## Status
 
-Draft
+Ready
 
 ## Executor Assignment
 
@@ -84,13 +84,14 @@ quality_gate_tools: ["jest", "eslint", "coderabbit"]
 - [ ] **Task 3: Integrar no CLI router** (AC: 1, 6)
   - [ ] 3.1 Adicionar `html` ao `FORMAT_MAP` e `VALID_FORMATS` em cli.js
   - [ ] 3.2 Quando `--format=html`: gerar arquivo, escrever em `.aios/graph.html`, abrir browser
-  - [ ] 3.3 Adicionar dependencia `open` (sindresorhus, v11+) para cross-platform browser open
-  - [ ] 3.4 Fallback: se `open` falhar, printar path do arquivo para usuario abrir manualmente
+  - [ ] 3.3 Usar `child_process.exec` com comando nativo para abrir browser (Windows: `start`, macOS: `open`, Linux: `xdg-open`) — zero deps externas
+  - [ ] 3.4 Fallback: se abertura falhar, printar path do arquivo para usuario abrir manualmente
+  - [ ] 3.5 Criar diretorio `.aios/` se nao existir (`fs.mkdirSync` recursive)
 
-- [ ] **Task 4: Combinacao com --watch** (AC: 7)
-  - [ ] 4.1 Se `--watch --format=html`: regenerar HTML file no intervalo
-  - [ ] 4.2 Adicionar meta refresh ou WebSocket snippet para auto-reload no browser
-  - [ ] 4.3 Alternativa simples: `<meta http-equiv="refresh" content="5">` no HTML
+- [ ] **Task 4: Combinacao com --watch (requer GD-4)** (AC: 7)
+  - [ ] 4.1 Se `--watch --format=html`: regenerar HTML file no intervalo (reusar handleWatch de GD-4)
+  - [ ] 4.2 Adicionar `<meta http-equiv="refresh" content="5">` no HTML para auto-reload no browser
+  - [ ] 4.3 Nota: meta-refresh e suficiente para MVP; WebSocket seria over-engineering
 
 - [ ] **Task 5: Escrever testes unitarios** (AC: 8)
   - [ ] 5.1 `tests/graph-dashboard/html-formatter.test.js`
@@ -132,13 +133,20 @@ https://unpkg.com/vis-network/standalone/umd/vis-network.min.js
 
 Standalone build inclui tudo (vis-data + vis-network) em um unico arquivo.
 
-### open npm package
+### Browser Open (zero deps)
 
-```bash
-npm install open  # v11.0.0, sindresorhus
+Usar `child_process.exec` com comando nativo do OS:
+
+```javascript
+const { exec } = require('child_process');
+const platform = process.platform;
+const cmd = platform === 'win32' ? 'start' : platform === 'darwin' ? 'open' : 'xdg-open';
+exec(`${cmd} ${filePath}`, (err) => {
+  if (err) console.log(`Open manually: ${filePath}`);
+});
 ```
 
-Cross-platform: macOS (`open`), Windows (`start`), Linux (`xdg-open`).
+Zero dependencias externas. Se no futuro precisar de mais robustez, considerar `open` (sindresorhus, v11).
 
 ### HTML Template Skeleton
 
@@ -182,7 +190,16 @@ Cross-platform: macOS (`open`), Windows (`start`), Linux (`xdg-open`).
 
 **Complexity:** Medium
 **Estimation:** 6-8 horas
-**Dependencies:** GD-3 (Done) — JSON formatter e CLI router existentes
+**Dependencies:** GD-3 (Done) — JSON formatter e CLI router existentes. GD-4 (watch mode) para Task 4.
+
+### Riscos e Mitigacao
+
+| Risco | Probabilidade | Mitigacao |
+|-------|--------------|-----------|
+| CDN indisponivel (offline) | Media | AC7 cobre: browser cacheia apos primeiro load. Nota no HTML: "requires internet on first load" |
+| XSS via labels de nodes | Baixa | Task 1.4 sanitiza JSON embedding. Test 5.6 valida |
+| Grafos grandes (500+ nodes) lentos | Media | Physics stabilization com iterations limitadas (Task 1.5). Test 6.5 valida |
+| `child_process.exec` bloqueado por antivirus | Baixa | Fallback: print path para usuario (Task 3.4) |
 
 ## Testing
 
@@ -211,6 +228,7 @@ npm test
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2026-02-21 | @devops (Gage) | Story created from research |
+| 1.1 | 2026-02-21 | @po (Pax) | Validated GO. Removed `open` dep (use native exec). Added risks. Task 4 dep on GD-4. Status Draft → Ready |
 
 ## QA Results
 (to be filled by @qa)
