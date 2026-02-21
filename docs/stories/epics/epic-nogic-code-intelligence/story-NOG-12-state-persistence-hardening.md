@@ -108,7 +108,11 @@ As a **framework developer**, I want all state persistence points to use atomic 
   - [ ] 3.3 Add "first prompt" guard to prevent repeated cleanup
   - [ ] 3.4 Write test for cleanup integration
 - [ ] 4. Run full test suite — zero regressions
-- [ ] 5. Update story checkboxes and file list
+- [ ] 5. Journey Snapshot: Run `node tests/synapse/benchmarks/wave6-journey.js --tag="NOG-12"`
+  - [ ] 5.1 Compare with NOG-10 snapshot — zero regressions in unrelated metrics
+  - [ ] 5.2 Document improvements/changes in journey-log.md
+  - [ ] 5.3 If regression detected: fix before push or document as accepted trade-off
+- [ ] 6. Update story checkboxes and file list
 
 ---
 
@@ -118,6 +122,10 @@ As a **framework developer**, I want all state persistence points to use atomic 
 - `tests/synapse/atomic-write.test.js` — utility tests (new)
 - `tests/synapse/session-manager.test.js` — cleanup wiring test (extended)
 - `tests/synapse/engine.test.js` — verify existing tests still pass
+
+### Performance Journey
+- `node tests/synapse/benchmarks/wave6-journey.js --tag="NOG-12" --compare="NOG-10"`
+- Expected: atomic writes (no timing impact), session cleanup wired, no regressions
 
 ---
 

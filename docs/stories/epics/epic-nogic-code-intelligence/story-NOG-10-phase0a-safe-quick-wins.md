@@ -7,7 +7,7 @@
 | **Story ID** | NOG-10 |
 | **Epic** | NOGIC — Code Intelligence Integration |
 | **Type** | Bug Fix / Performance |
-| **Status** | Draft |
+| **Status** | Ready |
 | **Priority** | P0 |
 | **Points** | 3 |
 | **Agent** | @dev (Dex) |
@@ -39,7 +39,7 @@ These are not new features — they are **fixes to existing infrastructure that 
 |-----|---------------|----------------|
 | QW-1 | C4-session-state.md | `.claude/hooks/synapse-engine.cjs:47-52` |
 | QW-3 | C6-token-budget.md | `.aios-core/core/synapse/context/context-tracker.js:103` |
-| QW-5 | A4-git-detection.md | `.aios-core/infrastructure/scripts/git-config-detector.js:136` |
+| QW-5 | A4-git-detection.md | `.aios-core/infrastructure/scripts/git-config-detector.js:134` |
 
 ---
 
@@ -109,7 +109,11 @@ These are not new features — they are **fixes to existing infrastructure that 
   - [ ] 3.6 Write 4 mandatory tests (normal, detached, worktree, no-git)
   - [ ] 3.7 Verify with `uap-metrics.json` that duration < 5ms
 - [ ] 4. Run full test suite (`npm test`) — zero regressions
-- [ ] 5. Update story checkboxes and file list
+- [ ] 5. Journey Snapshot: Run `node tests/synapse/benchmarks/wave6-journey.js --tag="NOG-10"`
+  - [ ] 5.1 Compare with baseline snapshot — zero regressions in unrelated metrics
+  - [ ] 5.2 Document improvements/changes in journey-log.md
+  - [ ] 5.3 If regression detected: fix before push or document as accepted trade-off
+- [ ] 6. Update story checkboxes and file list
 
 ---
 
@@ -123,15 +127,69 @@ npm run typecheck           # No type errors (if applicable)
 ```
 
 ### Specific Tests
-- `tests/synapse/engine.test.js` — bracket transition tests
-- `tests/synapse/context-tracker.test.js` — token estimation with XML
-- `tests/infrastructure/git-config-detector.test.js` — 4 branch detection scenarios
+- `tests/synapse/engine.test.js` — bracket transition tests (extend existing)
+- `tests/synapse/context-tracker.test.js` — token estimation with XML (extend existing)
+- `tests/infrastructure/git-config-detector.test.js` — 4 branch detection scenarios (**new file**)
+
+### Performance Journey
+- `node tests/synapse/benchmarks/wave6-journey.js --tag="NOG-10" --compare="baseline"`
+- Expected: gitConfig.duration <5ms, bracket transitions working, token estimate +15%
+
+---
+
+## Dev Notes
+
+### Source Tree (Affected Files)
+
+```
+.claude/hooks/
+  synapse-engine.cjs              # QW-1: Hook entry — add updateSession() call after engine.process()
+
+.aios-core/core/synapse/
+  engine.js                       # QW-1: Returns bracket in result — source of last_bracket value
+  context/
+    context-tracker.js:103        # QW-3: estimateContextPercent() — apply 1.2x multiplier
+  session/
+    session-manager.js:197        # QW-1: updateSession() — exists, exported, never called from hook
+  runtime/
+    hook-runtime.js               # QW-1: resolveHookRuntime() — loads session, creates engine
+
+.aios-core/infrastructure/scripts/
+  git-config-detector.js:134      # QW-5: _getCurrentBranch() — replace execSync with file read
+```
+
+### Key Integration Points
+
+- **QW-1 flow:** `synapse-engine.cjs` calls `engine.process()` → gets `result.bracket` → calls `updateSession()` with bracket update
+- **QW-3 location:** Single function `estimateContextPercent()` at context-tracker.js:103, used by engine.js:234 and pipeline-collector.js:40
+- **QW-5 method:** `_getCurrentBranch()` at git-config-detector.js:134, called from `detect()` at line 60
+
+### File List
+
+| File | Action | Notes |
+|------|--------|-------|
+| `.claude/hooks/synapse-engine.cjs` | MODIFY | Add updateSession() call after engine.process() |
+| `.aios-core/core/synapse/context/context-tracker.js` | MODIFY | Apply 1.2x multiplier in estimateContextPercent() |
+| `.aios-core/infrastructure/scripts/git-config-detector.js` | MODIFY | Add _detectBranchDirect() with fallback chain |
+| `tests/synapse/engine.test.js` | MODIFY | Add bracket transition tests |
+| `tests/synapse/context-tracker.test.js` | MODIFY | Add XML multiplier test |
+| `tests/infrastructure/git-config-detector.test.js` | **CREATE** | 4 branch detection scenarios (new file) |
 
 ---
 
 ## CodeRabbit Integration
 
-Standard self-healing (dev phase): max 2 iterations, CRITICAL/HIGH auto-fix.
+**Story Type:** Bug Fix / Performance (3 pts)
+**Primary Agent:** @dev (Dex)
+**Complexity:** Low-Medium (wiring fixes, no new architecture)
+
+**Self-Healing:** Dev phase — max 2 iterations, CRITICAL/HIGH auto-fix.
+
+**Focus Areas:**
+- Regression safety (existing tests must pass unchanged)
+- Performance validation (git detection < 5ms)
+- Error handling in fallback chain (QW-5)
+- Session file write correctness (QW-1)
 
 ---
 
@@ -140,3 +198,4 @@ Standard self-healing (dev phase): max 2 iterations, CRITICAL/HIGH auto-fix.
 | Date | Author | Change |
 |------|--------|--------|
 | 2026-02-21 | @sm (River) | Story created — Draft |
+| 2026-02-21 | @po (Pax) | Validated GO — Added Dev Notes, File List, fixed line ref (136→134), expanded CodeRabbit section. Status: Draft → Ready |

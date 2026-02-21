@@ -124,12 +124,20 @@ Method: Log full input payload from synapse-engine.cjs stdin
   - [ ] 4.2 Propose instrumentation plan
   - [ ] 4.3 Define monitoring hooks for future transition
 - [ ] 5. Decision: GO (proceed to STR-2 with real source) or CALIBRATE (improve estimation)
+- [ ] 6. Journey Snapshot: Run `node tests/synapse/benchmarks/wave6-journey.js --tag="NOG-11"`
+  - [ ] 6.1 Compare with NOG-10 snapshot — zero regressions in unrelated metrics
+  - [ ] 6.2 Document improvements/changes in journey-log.md
+  - [ ] 6.3 If regression detected: fix before push or document as accepted trade-off
 
 ---
 
 ## Testing
 
 N/A — Research/spike story. PoC only, no production code.
+
+### Performance Journey
+- `node tests/synapse/benchmarks/wave6-journey.js --tag="NOG-11" --compare="NOG-10"`
+- Expected: last_tokens_used populated (if viable source found), no regressions
 
 ---
 

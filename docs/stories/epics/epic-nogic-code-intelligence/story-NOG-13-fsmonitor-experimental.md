@@ -75,12 +75,20 @@ NOG-9 research (A7) identified that `core.fsmonitor` can reduce `git status` fro
 - [ ] 3. Write documentation
 - [ ] 4. Write tests for detection logic
 - [ ] 5. Run full test suite — zero regressions
+- [ ] 6. Journey Snapshot: Run `node tests/synapse/benchmarks/wave6-journey.js --tag="NOG-13"`
+  - [ ] 6.1 Compare with NOG-12 snapshot — zero regressions in unrelated metrics
+  - [ ] 6.2 Document improvements/changes in journey-log.md
+  - [ ] 6.3 If regression detected: fix before push or document as accepted trade-off
 
 ---
 
 ## Testing
 
 - `tests/cli/doctor.test.js` — fsmonitor detection scenarios (new or extended)
+
+### Performance Journey
+- `node tests/synapse/benchmarks/wave6-journey.js --tag="NOG-13" --compare="NOG-12"`
+- Expected: gitConfig.duration improvement (if fsmonitor enabled), no regressions
 
 ---
 
