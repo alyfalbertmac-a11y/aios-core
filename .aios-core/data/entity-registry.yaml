@@ -1,7 +1,7 @@
 metadata:
   version: 1.0.0
-  lastUpdated: '2026-02-21T04:07:07.055Z'
-  entityCount: 517
+  lastUpdated: '2026-02-21T04:59:39.990Z'
+  entityCount: 520
   checksumAlgorithm: sha256
 entities:
   tasks:
@@ -6193,9 +6193,9 @@ entities:
       checksum: sha256:74ac4edc22f53a6e1ff7fe7d16add65b4e85e198dcdd0f54d3048ba032dc8f9a
       lastVerified: '2026-02-08T13:33:24.327Z'
     index:
-      path: .aios-core/core/ids/index.js
+      path: .aios-core/core/graph-dashboard/index.js
       type: module
-      purpose: Entity at .aios-core\core\ids\index.js
+      purpose: Entity at .aios-core\core\graph-dashboard\index.js
       keywords:
         - index
       usedBy:
@@ -6206,23 +6206,15 @@ entities:
         - devops-helper
         - creation-helper
       dependencies:
-        - registry-loader
-        - incremental-decision-engine
-        - registry-updater
-        - registry-healer
-        - circuit-breaker
-        - verification-gate
-        - g1-epic-creation
-        - g2-story-creation
-        - g3-story-validation
-        - g4-dev-context
-        - framework-governor
+        - code-intel-source
+        - tree-renderer
+        - cli
       adaptability:
         score: 0.4
         constraints: []
         extensionPoints: []
-      checksum: sha256:89969400668078caea7398b0d7218f3f2fab2e996c05b6361e5618da2b9262d2
-      lastVerified: '2026-02-10T15:57:42.783Z'
+      checksum: sha256:d4e43c674dd7c119afd0afacc5b899c35de82890a61a3bcefc957819314f8cee
+      lastVerified: '2026-02-21T04:59:39.986Z'
     config-cache:
       path: .aios-core/core/config/config-cache.js
       type: module
@@ -6756,8 +6748,8 @@ entities:
         - loader
       usedBy:
         - registry-syncer
-        - index
         - framework-governor
+        - code-intel-source
       dependencies: []
       adaptability:
         score: 0.4
@@ -8458,7 +8450,6 @@ entities:
         - registry
         - updater
       usedBy:
-        - index
         - framework-governor
       dependencies: []
       adaptability:
@@ -8513,7 +8504,6 @@ entities:
         - circuit
         - breaker
       usedBy:
-        - index
         - verification-gate
       dependencies: []
       adaptability:
@@ -8529,8 +8519,7 @@ entities:
       keywords:
         - framework
         - governor
-      usedBy:
-        - index
+      usedBy: []
       dependencies:
         - registry-loader
         - incremental-decision-engine
@@ -8549,8 +8538,7 @@ entities:
         - g1
         - epic
         - creation
-      usedBy:
-        - index
+      usedBy: []
       dependencies: []
       adaptability:
         score: 0.4
@@ -8566,8 +8554,7 @@ entities:
         - g2
         - story
         - creation
-      usedBy:
-        - index
+      usedBy: []
       dependencies: []
       adaptability:
         score: 0.4
@@ -8583,8 +8570,7 @@ entities:
         - g3
         - story
         - validation
-      usedBy:
-        - index
+      usedBy: []
       dependencies: []
       adaptability:
         score: 0.4
@@ -8600,8 +8586,7 @@ entities:
         - g4
         - dev
         - context
-      usedBy:
-        - index
+      usedBy: []
       dependencies: []
       adaptability:
         score: 0.4
@@ -8618,7 +8603,6 @@ entities:
         - healer
       usedBy:
         - ids-health
-        - index
       dependencies: []
       adaptability:
         score: 0.4
@@ -8633,8 +8617,7 @@ entities:
       keywords:
         - verification
         - gate
-      usedBy:
-        - index
+      usedBy: []
       dependencies:
         - circuit-breaker
       adaptability:
@@ -8998,6 +8981,60 @@ entities:
         extensionPoints: []
       checksum: sha256:2523ce93f863a28f798d992c4f2fab041c91a09413b3186fd290e6035b391587
       lastVerified: '2026-02-16T01:21:26.584Z'
+    cli:
+      path: .aios-core/core/graph-dashboard/cli.js
+      type: module
+      purpose: Entity at .aios-core\core\graph-dashboard\cli.js
+      keywords:
+        - cli
+      usedBy:
+        - index
+      dependencies:
+        - code-intel-source
+        - tree-renderer
+      adaptability:
+        score: 0.4
+        constraints: []
+        extensionPoints: []
+      checksum: sha256:80330795dbd225ff2f5f5939952e2e716f490b993d94f3616ae92b2e78fe1c8e
+      lastVerified: '2026-02-21T04:59:39.982Z'
+    code-intel-source:
+      path: .aios-core/core/graph-dashboard/data-sources/code-intel-source.js
+      type: module
+      purpose: Entity at .aios-core\core\graph-dashboard\data-sources\code-intel-source.js
+      keywords:
+        - code
+        - intel
+        - source
+      usedBy:
+        - index
+        - cli
+      dependencies:
+        - code-intel
+        - registry-loader
+      adaptability:
+        score: 0.4
+        constraints: []
+        extensionPoints: []
+      checksum: sha256:c3679ef97f08753915bbf8583e8aec4b560db9516f4eced50ee7fe13e8961deb
+      lastVerified: '2026-02-21T04:59:39.985Z'
+    tree-renderer:
+      path: .aios-core/core/graph-dashboard/renderers/tree-renderer.js
+      type: module
+      purpose: Entity at .aios-core\core\graph-dashboard\renderers\tree-renderer.js
+      keywords:
+        - tree
+        - renderer
+      usedBy:
+        - index
+        - cli
+      dependencies: []
+      adaptability:
+        score: 0.4
+        constraints: []
+        extensionPoints: []
+      checksum: sha256:067bb5aefdfff0442a6132b89cec9ac61e84c9a9295097209a71c839978cef10
+      lastVerified: '2026-02-21T04:59:39.987Z'
   agents:
     aios-master:
       path: .aios-core/development/agents/aios-master.md

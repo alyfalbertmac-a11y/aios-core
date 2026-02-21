@@ -141,6 +141,46 @@ describe('CodeIntelSource', () => {
       expect(result.nodes).toEqual([]);
       expect(result.edges).toEqual([]);
     });
+
+    it('should handle flat object with dependencies property', async () => {
+      mockIsAvailable = true;
+      mockAnalyzeResult = {
+        dependencies: {
+          'mod-x': { type: 'module', path: 'x.js', dependencies: ['mod-y'] },
+          'mod-y': { type: 'module', path: 'y.js' },
+        },
+      };
+
+      const result = await source.getData();
+
+      expect(result.nodes).toHaveLength(2);
+      expect(result.nodes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: 'mod-x' }),
+          expect.objectContaining({ id: 'mod-y' }),
+        ])
+      );
+      expect(result.edges).toEqual(
+        expect.arrayContaining([expect.objectContaining({ from: 'mod-x', to: 'mod-y' })])
+      );
+    });
+  });
+
+  describe('getData - registry fallback error', () => {
+    it('should return empty graph when RegistryLoader throws', async () => {
+      mockRegistryData = null;
+      const { RegistryLoader } = require('../../.aios-core/core/ids/registry-loader');
+      RegistryLoader.mockImplementationOnce(() => ({
+        load: () => { throw new Error('Registry file missing'); },
+      }));
+
+      const result = await source.getData();
+
+      expect(result.nodes).toEqual([]);
+      expect(result.edges).toEqual([]);
+      expect(result.source).toBe('registry');
+      expect(result.isFallback).toBe(true);
+    });
   });
 
   describe('getData - empty registry', () => {

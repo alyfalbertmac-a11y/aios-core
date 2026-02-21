@@ -332,18 +332,35 @@ Implementation is clean and well-structured. The module follows the existing cod
 - Caching with configurable TTL prevents redundant RegistryLoader calls
 - JSDoc on all public functions
 
-**Coverage Summary:**
+**Coverage Summary (after observations resolved):**
 
 | File | Stmts | Branch | Funcs | Lines |
 |------|-------|--------|-------|-------|
 | cli.js | 100% | 96.15% | 100% | 100% |
-| code-intel-source.js | 89.39% | 57.57% | 88.88% | 92.18% |
+| code-intel-source.js | 95.45% | 71.21% | 100% | 98.43% |
 | tree-renderer.js | 98.21% | 82.85% | 100% | 100% |
-| index.js | 0% | 100% | 0% | 0% |
+| index.js | 100% | 100% | 100% | 100% |
 
 ### Refactoring Performed
 
 None. Code quality is adequate for PASS.
+
+### Tests Added During Review
+
+- **File**: `tests/graph-dashboard/code-intel-source.test.js`
+  - **Change**: Added test for flat object normalization path (`deps.dependencies`)
+  - **Why**: Branch coverage gap at 57.57% — untested defensive path
+  - **Result**: Branch coverage improved to 71.21%
+
+- **File**: `tests/graph-dashboard/code-intel-source.test.js`
+  - **Change**: Added test for `_getRegistryFallback` catch path (RegistryLoader throws)
+  - **Why**: Error recovery path was untested
+  - **Result**: Functions coverage improved to 100%
+
+- **File**: `tests/graph-dashboard/index.test.js` (new)
+  - **Change**: Created 5 tests for public API wrapper (`getGraphData`, exports)
+  - **Why**: index.js had 0% coverage
+  - **Result**: 100% coverage on index.js
 
 ### Compliance Check
 
@@ -354,14 +371,14 @@ None. Code quality is adequate for PASS.
 
 ### Improvements Checklist
 
-- [x] All 36 unit tests passing
-- [x] Full regression (6457 tests) passing
+- [x] All 43 unit tests passing
+- [x] Full regression (6464 tests) passing
 - [x] Lint: 0 errors
 - [x] CLI executes with real registry data (517 entities)
 - [x] Pipe mode verified
-- [ ] Add test for flat object normalization path (`deps.dependencies` at line 125-134)
-- [ ] Add test for `_getRegistryFallback` catch path (RegistryLoader throws)
-- [ ] Add basic test for `index.js` `getGraphData()` wrapper
+- [x] Test for flat object normalization path (`deps.dependencies`)
+- [x] Test for `_getRegistryFallback` catch path (RegistryLoader throws)
+- [x] Test for `index.js` `getGraphData()` wrapper
 
 ### Security Review
 
@@ -373,13 +390,16 @@ No concerns. 517-entity registry renders instantly. Caching with configurable TT
 
 ### Files Modified During Review
 
-None.
+| File | Action | Description |
+|------|--------|-------------|
+| `tests/graph-dashboard/code-intel-source.test.js` | Modified | Added 2 tests (flat object normalization + registry fallback error) |
+| `tests/graph-dashboard/index.test.js` | Created | 5 tests for public API wrapper |
 
 ### Gate Status
 
 Gate: **PASS** → `docs/qa/gates/gd-1-cli-entrypoint-dependency-tree.yml`
-Quality Score: 85/100
+Quality Score: 95/100
 
 ### Recommended Status
 
-✓ Ready for Done — All ACs met, tests passing, no blocking issues. Unchecked items above are future improvements (MEDIUM/LOW), not blockers.
+✓ Ready for Done — All ACs met, all 43 tests passing, all observations resolved. Zero open issues.
