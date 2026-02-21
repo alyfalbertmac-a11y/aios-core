@@ -1,7 +1,7 @@
 metadata:
   version: 1.0.0
-  lastUpdated: '2026-02-21T04:59:39.990Z'
-  entityCount: 520
+  lastUpdated: '2026-02-21T13:09:55.617Z'
+  entityCount: 523
   checksumAlgorithm: sha256
 entities:
   tasks:
@@ -2293,7 +2293,7 @@ entities:
       path: .aios-core/development/tasks/pr-automation.md
       type: task
       purpose: >-
-        To help users contribute to the AIOS open-source project (`@synkra/aios-core`) by automating the PR creation
+        To help users contribute to the AIOS open-source project (`aios-core`) by automating the PR creation
         process, ensuring contributions follow project standards, pass quality checks, and have pro
       keywords:
         - pr
@@ -6750,6 +6750,7 @@ entities:
         - registry-syncer
         - framework-governor
         - code-intel-source
+        - registry-source
       dependencies: []
       adaptability:
         score: 0.4
@@ -8991,13 +8992,16 @@ entities:
         - index
       dependencies:
         - code-intel-source
+        - registry-source
+        - metrics-source
         - tree-renderer
+        - stats-renderer
       adaptability:
         score: 0.4
         constraints: []
         extensionPoints: []
-      checksum: sha256:80330795dbd225ff2f5f5939952e2e716f490b993d94f3616ae92b2e78fe1c8e
-      lastVerified: '2026-02-21T04:59:39.982Z'
+      checksum: sha256:de1be3131ef929fd6574bc3c6b7a5937f430d63f2572cd4108a85e0eefdef125
+      lastVerified: '2026-02-21T13:09:55.613Z'
     code-intel-source:
       path: .aios-core/core/graph-dashboard/data-sources/code-intel-source.js
       type: module
@@ -9035,6 +9039,56 @@ entities:
         extensionPoints: []
       checksum: sha256:067bb5aefdfff0442a6132b89cec9ac61e84c9a9295097209a71c839978cef10
       lastVerified: '2026-02-21T04:59:39.987Z'
+    metrics-source:
+      path: .aios-core/core/graph-dashboard/data-sources/metrics-source.js
+      type: module
+      purpose: Entity at .aios-core\core\graph-dashboard\data-sources\metrics-source.js
+      keywords:
+        - metrics
+        - source
+      usedBy:
+        - cli
+      dependencies:
+        - code-intel
+      adaptability:
+        score: 0.4
+        constraints: []
+        extensionPoints: []
+      checksum: sha256:b1e4027f82350760b67ea8f58e04a5e739f87f010838487043e29dab7301ae9e
+      lastVerified: '2026-02-21T13:09:55.614Z'
+    registry-source:
+      path: .aios-core/core/graph-dashboard/data-sources/registry-source.js
+      type: module
+      purpose: Entity at .aios-core\core\graph-dashboard\data-sources\registry-source.js
+      keywords:
+        - registry
+        - source
+      usedBy:
+        - cli
+      dependencies:
+        - registry-loader
+      adaptability:
+        score: 0.4
+        constraints: []
+        extensionPoints: []
+      checksum: sha256:32d2a4bd5b102823d5933e5f9a648ae7e647cb1918092063161fed80d32b844b
+      lastVerified: '2026-02-21T13:09:55.615Z'
+    stats-renderer:
+      path: .aios-core/core/graph-dashboard/renderers/stats-renderer.js
+      type: module
+      purpose: Entity at .aios-core\core\graph-dashboard\renderers\stats-renderer.js
+      keywords:
+        - stats
+        - renderer
+      usedBy:
+        - cli
+      dependencies: []
+      adaptability:
+        score: 0.4
+        constraints: []
+        extensionPoints: []
+      checksum: sha256:375f904e8592a546f594f63b2c717db03db500e7070372db6de5524ac74ba474
+      lastVerified: '2026-02-21T13:09:55.615Z'
   agents:
     aios-master:
       path: .aios-core/development/agents/aios-master.md
