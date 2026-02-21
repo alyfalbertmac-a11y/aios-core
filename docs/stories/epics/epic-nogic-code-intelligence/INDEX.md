@@ -57,7 +57,7 @@ Criar camada de code intelligence provider-agnostic em todas as tasks do AIOS, c
 ### Wave 6: UAP & SYNAPSE Hardening (from NOG-9 roadmap)
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
-| [NOG-10](story-NOG-10-phase0a-safe-quick-wins.md) | Phase 0A — Safe Quick Wins | @dev | 3 | Draft | NOG-9 |
+| [NOG-10](story-NOG-10-phase0a-safe-quick-wins.md) | Phase 0A — Safe Quick Wins | @dev | 3 | Ready | NOG-9 |
 | [NOG-11](story-NOG-11-token-usage-source-discovery.md) | Token Usage Source Discovery | @architect + @dev | 3 | Draft | NOG-10 |
 | [NOG-12](story-NOG-12-state-persistence-hardening.md) | State Persistence Hardening | @dev | 3 | Draft | NOG-10 |
 | [NOG-13](story-NOG-13-fsmonitor-experimental.md) | Git fsmonitor Experimental (Opt-in) | @dev | 1 | Draft | NOG-10 |

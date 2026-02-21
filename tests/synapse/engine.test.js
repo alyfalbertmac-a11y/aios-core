@@ -483,6 +483,35 @@ describe('SynapseEngine', () => {
     });
   });
 
+  describe('process() — bracket in return value (QW-1)', () => {
+    test('should return bracket field in result', async () => {
+      contextTracker.calculateBracket.mockReturnValue('FRESH');
+      const result = await engine.process('test', { prompt_count: 0 });
+      expect(result.bracket).toBe('FRESH');
+    });
+
+    test('should return MODERATE bracket when context is 55%', async () => {
+      contextTracker.estimateContextPercent.mockReturnValue(55);
+      contextTracker.calculateBracket.mockReturnValue('MODERATE');
+      const result = await engine.process('test', { prompt_count: 60 });
+      expect(result.bracket).toBe('MODERATE');
+    });
+
+    test('should return DEPLETED bracket when context is 30%', async () => {
+      contextTracker.estimateContextPercent.mockReturnValue(30);
+      contextTracker.calculateBracket.mockReturnValue('DEPLETED');
+      const result = await engine.process('test', { prompt_count: 100 });
+      expect(result.bracket).toBe('DEPLETED');
+    });
+
+    test('should return CRITICAL bracket when context is 10%', async () => {
+      contextTracker.estimateContextPercent.mockReturnValue(10);
+      contextTracker.calculateBracket.mockReturnValue('CRITICAL');
+      const result = await engine.process('test', { prompt_count: 120 });
+      expect(result.bracket).toBe('CRITICAL');
+    });
+  });
+
   describe('process() — edge cases for coverage', () => {
     test('should handle layer returning non-array rules (invalid result format)', async () => {
       // Make a layer return an object without rules array

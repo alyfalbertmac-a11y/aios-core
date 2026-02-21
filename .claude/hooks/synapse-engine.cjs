@@ -49,6 +49,21 @@ async function main() {
   if (!runtime) return;
 
   const result = await runtime.engine.process(input.prompt, runtime.session);
+
+  // QW-1: Wire updateSession() — persist bracket transitions after each prompt
+  if (runtime.sessionId && runtime.sessionsDir) {
+    try {
+      const { updateSession } = require(
+        path.join(runtime.cwd, '.aios-core', 'core', 'synapse', 'session', 'session-manager.js'),
+      );
+      updateSession(runtime.sessionId, runtime.sessionsDir, {
+        context: { last_bracket: result.bracket || 'FRESH' },
+      });
+    } catch (_err) {
+      // Fire-and-forget — never block the prompt
+    }
+  }
+
   const output = JSON.stringify(buildHookOutput(result.xml));
 
   // Write and flush stdout (callback may not exist in mocked environments)

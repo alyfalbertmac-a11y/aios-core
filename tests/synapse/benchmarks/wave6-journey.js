@@ -347,7 +347,7 @@ function classifyDelta(before, after) {
 // ---------------------------------------------------------------------------
 
 function fmt(v) {
-  if (typeof v === 'number') return v >= 0 ? v.toFixed(2) : 'err';
+  if (typeof v === 'number') return v.toFixed(2);
   return String(v);
 }
 

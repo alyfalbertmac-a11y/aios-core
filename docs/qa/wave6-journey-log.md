@@ -31,3 +31,32 @@ Commit: dece053d | Branch: feat/epic-nogic-code-intelligence
 | Bracket | FRESH |
 | Prompt count | 0 |
 
+---
+
+## Snapshot: NOG-10 (2026-02-21)
+Commit: 7e89ecd5 | Branch: feat/epic-nogic-code-intelligence
+
+### UAP Activation (6 agents)
+| Agent | Total (ms) | Quality | Slowest Loader | Code-Intel |
+|-------|-----------|---------|----------------|------------|
+| dev | 272.00 | partial | projectStatus (83.00ms, timeout) | disconnected |
+| qa | 39.00 | full | gitConfig (35.00ms) | disconnected |
+| architect | 38.00 | full | gitConfig (35.00ms) | disconnected |
+| devops | 39.00 | full | permissionMode (35.00ms) | disconnected |
+| sm | 38.00 | full | gitConfig (35.00ms) | disconnected |
+| po | 38.00 | full | gitConfig (34.00ms) | disconnected |
+
+### SYNAPSE Pipeline
+| Metric | Value |
+|--------|-------|
+| p50 | 0.38ms |
+| p95 | 0.60ms |
+| Layers loaded | 3/8 |
+| Total rules | 70 |
+
+### Session State
+| Field | Value |
+|-------|-------|
+| Bracket | MODERATE |
+| Prompt count | 0 |
+
