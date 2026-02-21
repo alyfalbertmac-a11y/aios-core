@@ -8,9 +8,9 @@
 # - File types for categorization
 #
 version: 4.2.13
-generated_at: "2026-02-21T14:34:02.509Z"
+generated_at: "2026-02-21T14:58:46.256Z"
 generator: scripts/generate-install-manifest.js
-file_count: 1027
+file_count: 1030
 files:
   - path: cli/commands/config/index.js
     hash: sha256:ebcad2ce3807eda29dcddff76d7a95ddc9b7fa160df21fd608f94b802237e862
@@ -1212,6 +1212,10 @@ files:
     hash: sha256:d07b1f9e2fcb78f62188ef05a6e6f75a94821b6bb297ea67f2e782e260d27f49
     type: checklist
     size: 3335
+  - path: development/checklists/issue-triage-checklist.md
+    hash: sha256:c6dbaae38c0e3030dbffebcbcf95e5e766e0294a7a678531531cbd7ad6e54e2b
+    type: checklist
+    size: 1245
   - path: development/checklists/self-critique-checklist.md
     hash: sha256:869fbc8fbc333ac8eea4eca3ea4ab9ca79917fa5e53735b70d634c85ac6420c8
     type: checklist
@@ -1344,6 +1348,10 @@ files:
     hash: sha256:8155920904d4d8b9e9c5eac09732ad86639b0303e077725f2692e90c28715492
     type: script
     size: 5166
+  - path: development/scripts/issue-triage.js
+    hash: sha256:a9f9741b1426732f19803bf9f292b15d8eed0fb875cf02df70735f48512f2310
+    type: script
+    size: 5777
   - path: development/scripts/manifest-preview.js
     hash: sha256:caccc28155efee736533622e3bc62c67abb9721e1f4e9bf761ef02f8d8a37026
     type: script
@@ -1872,6 +1880,10 @@ files:
     hash: sha256:823916f01d2242591cd5a4b607e96f130ceaf040015f510b24847752861bcc0c
     type: task
     size: 11737
+  - path: development/tasks/github-issue-triage.md
+    hash: sha256:a76192c203ff0e709ba52dfa595f2d81351e4c52180407b9d05b99dbea8de709
+    type: task
+    size: 3884
   - path: development/tasks/gotcha.md
     hash: sha256:c6f621ada5233e0f4181b8e052181017a040246eec604749c970786b7cf9f837
     type: task
