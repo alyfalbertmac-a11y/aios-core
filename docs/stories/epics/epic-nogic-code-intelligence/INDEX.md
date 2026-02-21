@@ -58,15 +58,18 @@ Criar camada de code intelligence provider-agnostic em todas as tasks do AIOS, c
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
 | [NOG-10](story-NOG-10-phase0a-safe-quick-wins.md) | Phase 0A — Safe Quick Wins | @dev | 3 | Done | NOG-9 |
-| [NOG-11](story-NOG-11-token-usage-source-discovery.md) | Token Usage Source Discovery | @architect + @dev | 3 | Ready | NOG-10 |
+| [NOG-11](story-NOG-11-token-usage-source-discovery.md) | Token Usage Source Discovery | @architect + @dev | 3 | Done | NOG-10 |
 | [NOG-12](story-NOG-12-state-persistence-hardening.md) | State Persistence Hardening | @dev | 3 | Draft | NOG-10 |
 | [NOG-13](story-NOG-13-fsmonitor-experimental.md) | Git fsmonitor Experimental (Opt-in) | @dev | 1 | Draft | NOG-10 |
 | [NOG-14](story-NOG-14-adr-memory-self-editing-security.md) | ADR: Memory Self-Editing Security | @architect + @qa | 2 | Draft | NOG-9 |
 
-### Wave 7: Registry Quality (from GD-7 gap analysis)
+### Wave 7: Registry Quality (from GD-7 gap analysis + registry governance research)
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
-| [NOG-15](story-NOG-15-scanner-semantic-extractors.md) | Scanner Semantic Extractors | @dev | 5 | Ready | None |
+| [NOG-15](story-NOG-15-scanner-semantic-extractors.md) | Scanner Semantic Extractors | @dev | 5 | Ready for Review | None |
+| [NOG-16A](story-NOG-16-dependency-quality-filters.md) | Scan Config Expansion + Sentinel Filter | @dev | 3 | Draft | None |
+| [NOG-16B](story-NOG-16B-dependency-classification-lifecycle.md) | Dependency Classification + Lifecycle | @dev | 3 | Draft | NOG-16A |
+| [NOG-16C](story-NOG-16C-graph-filtering-focus-mode.md) | Graph Filtering + Focus Mode | @dev | 3 | Draft | NOG-16B |
 
 ## Totals
 
@@ -132,6 +135,9 @@ NOG-0 (Provider Enablement)
         └── NOG-6 (Story Creation)
 
 NOG-15 (Scanner Semantic Extractors) — standalone, no blockers
+NOG-16A (Scan Config + Sentinel Filter) — standalone, no blockers
+  └── NOG-16B (Dep Classification + Lifecycle) — requires NOG-16A
+        └── NOG-16C (Graph Filtering + Focus Mode) — requires NOG-16B
 ```
 
 ## Provider Strategy

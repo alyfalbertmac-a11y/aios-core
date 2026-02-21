@@ -7,9 +7,12 @@ const {
   extractKeywords,
   extractPurpose,
   detectDependencies,
+  extractYamlDependencies,
+  extractMarkdownCrossReferences,
   computeChecksum,
   scanCategory,
   resolveUsedBy,
+  SCAN_CONFIG,
 } = require('../../../.aios-core/development/scripts/populate-entity-registry');
 
 const FIXTURES = path.resolve(__dirname, 'fixtures');
@@ -191,6 +194,211 @@ describe('populate-entity-registry (AC: 3, 4, 12)', () => {
         type: 'task',
       });
       expect(result).toEqual({});
+    });
+  });
+
+  describe('SCAN_CONFIG (NOG-15 AC1)', () => {
+    it('has 10 categories (7 existing + 3 new)', () => {
+      expect(SCAN_CONFIG).toHaveLength(10);
+      const categories = SCAN_CONFIG.map((c) => c.category);
+      expect(categories).toContain('workflows');
+      expect(categories).toContain('utils');
+      expect(categories).toContain('tools');
+    });
+
+    it('preserves all 7 original categories', () => {
+      const categories = SCAN_CONFIG.map((c) => c.category);
+      const originals = ['tasks', 'templates', 'scripts', 'modules', 'agents', 'checklists', 'data'];
+      for (const cat of originals) {
+        expect(categories).toContain(cat);
+      }
+    });
+  });
+
+  describe('extractYamlDependencies() (NOG-15 AC2, AC6)', () => {
+    const tmpDir = path.join(__dirname, 'fixtures');
+
+    it('extracts nested fields from agent YAML in markdown', () => {
+      const agentContent = [
+        '# Agent Dev',
+        '',
+        '```yaml',
+        'dependencies:',
+        '  tasks:',
+        '    - dev-develop-story.md',
+        '    - execute-checklist.md',
+        '  checklists:',
+        '    - story-dod-checklist.md',
+        '  tools:',
+        '    - coderabbit',
+        'commands:',
+        '  - name: develop',
+        '    task: dev-develop-story.md',
+        '```',
+      ].join('\n');
+
+      const tmpFile = path.join(tmpDir, 'test-agent.md');
+      fs.writeFileSync(tmpFile, agentContent);
+
+      try {
+        const deps = extractYamlDependencies(tmpFile, 'agent');
+        expect(deps).toContain('dev-develop-story');
+        expect(deps).toContain('execute-checklist');
+        expect(deps).toContain('story-dod-checklist');
+        expect(deps).toContain('coderabbit');
+      } finally {
+        fs.unlinkSync(tmpFile);
+      }
+    });
+
+    it('extracts array fields from workflow YAML', () => {
+      const workflowContent = [
+        'workflow:',
+        '  id: test-workflow',
+        '  sequence:',
+        '    - step: create',
+        '      agent: sm',
+        '    - step: validate',
+        '      agent: po',
+        '    - step: implement',
+        '      agent: dev',
+      ].join('\n');
+
+      const tmpFile = path.join(tmpDir, 'test-workflow.yaml');
+      fs.writeFileSync(tmpFile, workflowContent);
+
+      try {
+        const deps = extractYamlDependencies(tmpFile, 'workflow');
+        expect(deps).toContain('sm');
+        expect(deps).toContain('po');
+        expect(deps).toContain('dev');
+      } finally {
+        fs.unlinkSync(tmpFile);
+      }
+    });
+
+    it('handles malformed YAML gracefully (returns [])', () => {
+      const tmpFile = path.join(tmpDir, 'bad-yaml.yaml');
+      fs.writeFileSync(tmpFile, '{{invalid: yaml: [}');
+
+      try {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+        const deps = extractYamlDependencies(tmpFile, 'agent');
+        expect(deps).toEqual([]);
+        warnSpy.mockRestore();
+      } finally {
+        fs.unlinkSync(tmpFile);
+      }
+    });
+  });
+
+  describe('extractMarkdownCrossReferences() (NOG-15 AC3)', () => {
+    it('detects all 4 patterns', () => {
+      const content = [
+        '# Task File',
+        '',
+        'dependencies:',
+        '  - task-a.md',
+        '  - task-b.md',
+        '',
+        '- **Tasks:** create-doc.md, validate-story.md',
+        '',
+        'See [the checklist](path/to/dod-checklist.md) for details.',
+        '',
+        '@dev should implement this, reviewed by @qa.',
+      ].join('\n');
+
+      const deps = extractMarkdownCrossReferences(content, 'my-task');
+      // Pattern A: YAML block
+      expect(deps).toContain('task-a');
+      expect(deps).toContain('task-b');
+      // Pattern B: Label list
+      expect(deps).toContain('create-doc');
+      expect(deps).toContain('validate-story');
+      // Pattern C: MD link
+      expect(deps).toContain('dod-checklist');
+      // Pattern D: Agent refs
+      expect(deps).toContain('dev');
+      expect(deps).toContain('qa');
+    });
+
+    it('filters out non-entity references (no unknown agent refs)', () => {
+      const content = '@unknown-agent should do something. @dev is valid.';
+      const deps = extractMarkdownCrossReferences(content, 'test');
+      expect(deps).not.toContain('unknown-agent');
+      expect(deps).toContain('dev');
+    });
+
+    it('excludes self-references', () => {
+      const content = '- self-task.md\n[link](self-task.md)';
+      const deps = extractMarkdownCrossReferences(content, 'self-task');
+      expect(deps).not.toContain('self-task');
+    });
+  });
+
+  describe('resolveUsedBy enhanced (NOG-15 AC4)', () => {
+    it('creates correct reverse references via name index', () => {
+      const entities = {
+        tasks: {
+          'task-a': {
+            path: '.aios-core/development/tasks/task-a.md',
+            type: 'task',
+            dependencies: ['util-x'],
+            usedBy: [],
+          },
+        },
+        utils: {
+          'util-x': {
+            path: '.aios-core/core/utils/util-x.js',
+            type: 'util',
+            dependencies: [],
+            usedBy: [],
+          },
+        },
+      };
+
+      resolveUsedBy(entities);
+      expect(entities.utils['util-x'].usedBy).toContain('task-a');
+    });
+
+    it('deduplicates usedBy entries on re-scan', () => {
+      const entities = {
+        tasks: {
+          'task-a': { path: 'a.md', dependencies: ['lib'], usedBy: [] },
+        },
+        modules: {
+          'lib': { path: 'lib.js', dependencies: [], usedBy: [] },
+        },
+      };
+
+      resolveUsedBy(entities);
+      resolveUsedBy(entities);
+
+      expect(entities.modules['lib'].usedBy).toEqual(['task-a']);
+    });
+
+    it('resolves by filename when ID does not match', () => {
+      const entities = {
+        tasks: {
+          'my-task': {
+            path: '.aios-core/development/tasks/my-task.md',
+            type: 'task',
+            dependencies: ['helper.js'],
+            usedBy: [],
+          },
+        },
+        scripts: {
+          'helper': {
+            path: '.aios-core/development/scripts/helper.js',
+            type: 'script',
+            dependencies: [],
+            usedBy: [],
+          },
+        },
+      };
+
+      resolveUsedBy(entities);
+      expect(entities.scripts['helper'].usedBy).toContain('my-task');
     });
   });
 
