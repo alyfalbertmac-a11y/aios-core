@@ -324,8 +324,15 @@ describe('SynapseEngine', () => {
       });
 
       const result = await engine.process('test', { prompt_count: 30 });
-      // L0, L1, L2 should be loaded; L3 also since MODERATE allows it
-      expect(result.metrics.layers_loaded).toBeGreaterThanOrEqual(3);
+
+      // MODERATE activates L3 (workflow) that FRESH skips — must load more layers
+      expect(result.metrics.layers_loaded).toBeGreaterThanOrEqual(4);
+
+      // Verify workflow layer (L3) is loaded, not skipped — the key differentiator from FRESH
+      const workflowEntry = result.metrics.per_layer.workflow;
+      if (workflowEntry) {
+        expect(workflowEntry.status).not.toBe('skipped');
+      }
     });
   });
 

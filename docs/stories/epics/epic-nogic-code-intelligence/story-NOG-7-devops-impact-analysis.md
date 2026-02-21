@@ -3,7 +3,7 @@
 ## Metadata
 - **Story ID:** NOG-7
 - **Epic:** Code Intelligence Integration (Provider-Agnostic)
-- **Status:** Ready for Review
+- **Status:** Done
 - **Priority:** P2 - Medium
 - **Points:** 2
 - **Agent:** @devops (Gage)
@@ -461,3 +461,5 @@ Ready for Done
 | 2026-02-21 | @sm (River) | v3.0 — Full expansion: Story format, Executor Assignment, Scope (IN/OUT), Risks, DoD, Dev Notes (Source Tree, Testing, NOG-3/4/5/6 context, function mapping, API reference, task integration context), CodeRabbit Integration, Tasks with subtasks + AC mapping, entity-registry task, Dev Agent Record/QA Results placeholders. 4 helper functions mapped to capabilities. 11 test scenarios defined. |
 | 2026-02-21 | @po (Pax) | v3.1 — PO Validation: GO. Score 9/10. Status Draft → Ready. All 4 ACs verified, 16/16 sections present, all claims anti-hallucination verified against source code. |
 | 2026-02-21 | @dev (Dex) | v4.0 — Implementation complete. devops-helper.js created (4 functions), pre-push task Step 9.1 added, PR automation Step 5.1 added, 25/25 tests passing, coverage 100/82.69/100/100%, entity registered. Status Ready → Ready for Review. |
+| 2026-02-21 | @qa (Quinn) | v4.1 — QA Review: PASS (100/100). 4/4 ACs covered, pattern compliance verified, 25/25 tests, zero regression (246/246 code-intel). Gate file created. |
+| 2026-02-21 | @po (Pax) | v5.0 — Story closed. Pushed as commit f8a46624. QA gate PASS. Epic INDEX updated. Status Ready for Review → Done. |

@@ -49,7 +49,13 @@ async function main() {
   if (!runtime) return;
 
   const result = await runtime.engine.process(input.prompt, runtime.session);
-  process.stdout.write(JSON.stringify(buildHookOutput(result.xml)));
+  const output = JSON.stringify(buildHookOutput(result.xml));
+
+  // Write and flush stdout (callback may not exist in mocked environments)
+  const flushed = process.stdout.write(output);
+  if (!flushed) {
+    await new Promise((resolve) => process.stdout.once('drain', resolve));
+  }
 }
 
 /**
@@ -65,10 +71,12 @@ function safeExit(code) {
 function run() {
   const timer = setTimeout(() => safeExit(0), HOOK_TIMEOUT_MS);
   timer.unref();
-  main().catch((err) => {
-    console.error(`[synapse-hook] ${err.message}`);
-    safeExit(0);
-  });
+  main()
+    .then(() => safeExit(0))
+    .catch((err) => {
+      console.error(`[synapse-hook] ${err.message}`);
+      safeExit(0);
+    });
 }
 
 if (require.main === module) run();

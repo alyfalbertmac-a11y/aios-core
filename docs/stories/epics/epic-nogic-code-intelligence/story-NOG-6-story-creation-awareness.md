@@ -3,7 +3,7 @@
 ## Metadata
 - **Story ID:** NOG-6
 - **Epic:** Code Intelligence Integration (Provider-Agnostic)
-- **Status:** Ready for Review
+- **Status:** Done
 - **Priority:** P2 - Medium
 - **Points:** 2
 - **Agent:** @sm (River) + @po (Pax)
@@ -464,3 +464,4 @@ Claude Opus 4.6
 | 2026-02-15 | @architect | Rewrite v2.0 — provider-agnostic, reduced from 3 to 2 points |
 | 2026-02-21 | @po (Pax) | v3.0 — Auto-fix: Executor Assignment, Story format, Scope (IN/OUT), Risks, DoD, Dev Notes (Source Tree, Testing, NOG-1/NOG-3/NOG-4/NOG-5 context, function mapping, API reference), CodeRabbit Integration, Tasks with subtasks + AC mapping, entity-registry task, Dev Agent Record/QA Results placeholders. 3 helper functions mapped to capabilities. 11 test scenarios defined. |
 | 2026-02-21 | @dev (Dex) | v4.0 — Implementation complete: story-helper.js (3 functions + _formatDuplicateWarning), create-next-story.md (step 1.2), validate-next-story.md (step 8.1), 24 tests passing, entity registered. Full regression: 6367/6367 passed. |
+| 2026-02-21 | @po (Pax) | v5.0 — Story closed. QA PASS. Commit ef403342. Status: Done. |

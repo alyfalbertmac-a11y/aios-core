@@ -3,7 +3,7 @@
 ## Metadata
 - **Story ID:** NOG-4
 - **Epic:** Code Intelligence Integration (Provider-Agnostic)
-- **Status:** Ready for Review
+- **Status:** Done
 - **Priority:** P1 - High
 - **Points:** 3
 - **Agent:** @qa (Quinn)
@@ -452,3 +452,6 @@ Ready for Done
 | 2026-02-15 | @po | v2.1 — Reduced Tasks Impactadas from 4 to 2 (qa-trace/qa-generate deferred to NOG-4B) |
 | 2026-02-20 | @po (Pax) | v3.0 — Auto-fix: Executor Assignment, Story format, Scope (IN/OUT), Risks, DoD, Dev Notes (Source Tree, Testing, NOG-1/NOG-3 context, Coverage mapping), CodeRabbit Integration, Tasks with subtasks + AC mapping, entity-registry task, Dev Agent Record/QA Results placeholders |
 | 2026-02-20 | @dev (Dex) | v3.1 — Implementation complete: qa-helper.js (4 functions), qa-gate.md + qa-review-story.md modified, 40/40 tests, 156/156 suite, entity registered. Status → Ready for Review |
+| 2026-02-20 | @qa (Quinn) | v3.2 — QA Review PASS (100/100). Gate: docs/qa/gates/nog-4-qa-gate-enhancement.yml |
+| 2026-02-21 | @devops (Gage) | v3.3 — Committed (8334b4c7) and pushed to feat/epic-nogic-code-intelligence |
+| 2026-02-21 | @po (Pax) | v4.0 — Story closed. Status → Done |

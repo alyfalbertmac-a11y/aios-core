@@ -701,11 +701,19 @@ async function createClaudeSettingsLocal(projectRoot) {
 
   // QA-C1 fix: Use correct Claude Code nested hook format
   // Format: { hooks: [{ type, command }] } not flat { type, command }
+  // Windows workaround: $CLAUDE_PROJECT_DIR has known bug on Windows (GH #6023/#5814)
+  // Use absolute path on Windows, $CLAUDE_PROJECT_DIR on other platforms
+  const isWindows = process.platform === 'win32';
+  const hookCommand = isWindows
+    ? `node "${hookFile.replace(/\\/g, '\\\\')}"` // Absolute path with escaped backslashes
+    : 'node "$CLAUDE_PROJECT_DIR/.claude/hooks/synapse-engine.cjs"';
+
   const hookWrapper = {
     hooks: [
       {
         type: 'command',
-        command: 'node ".claude/hooks/synapse-engine.cjs"',
+        command: hookCommand,
+        timeout: 10,
       },
     ],
   };

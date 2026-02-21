@@ -3,7 +3,7 @@
 ## Metadata
 - **Story ID:** NOG-5
 - **Epic:** Code Intelligence Integration (Provider-Agnostic)
-- **Status:** Ready for Review
+- **Status:** Done
 - **Priority:** P1 - High
 - **Points:** 3
 - **Agent:** @pm (Morgan) + @architect (Aria)
@@ -471,3 +471,4 @@ None.
 | 2026-02-15 | @architect | Rewrite v2.0 — provider-agnostic, reduced from 5 to 3 points |
 | 2026-02-15 | @po | v2.1 — Added create-doc.md and plan-create-implementation.md to tasks/file list |
 | 2026-02-21 | @po (Pax) | v3.0 — Auto-fix: Executor Assignment, Story format, Scope (IN/OUT), Risks, DoD, Dev Notes (Source Tree, Testing, NOG-1/NOG-3/NOG-4 context, function mapping), CodeRabbit Integration, Tasks with subtasks + AC mapping, entity-registry task, Dev Agent Record/QA Results placeholders. 5 helper functions mapped to capabilities. 15 test scenarios defined. |
+| 2026-02-21 | @po (Pax) | v4.0 — Story closed. Commit `dcd3e1f5` pushed to `feat/epic-nogic-code-intelligence`. QA PASS (Quinn). All 8 tasks + 22 subtasks complete. 41/41 tests, 0 regressions. |
