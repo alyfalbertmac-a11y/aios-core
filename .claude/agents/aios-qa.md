@@ -21,6 +21,8 @@ hooks:
           command: ".claude/hooks/enforce-git-push-authority.sh"
 skills:
   - synapse:tasks:diagnose-synapse
+  - coderabbit-review
+  - checklist-runner
 ---
 
 # AIOS QA - Autonomous Agent

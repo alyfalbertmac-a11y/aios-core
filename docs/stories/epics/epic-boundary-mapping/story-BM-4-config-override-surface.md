@@ -7,7 +7,7 @@
 | **Story ID** | BM-4 |
 | **Epic** | Boundary Mapping & Framework-Project Separation |
 | **Type** | Enhancement |
-| **Status** | Ready for Review |
+| **Status** | Done |
 | **Priority** | P2 |
 | **Points** | 5 |
 | **Agent** | @dev (Dex) |
@@ -314,6 +314,7 @@ L5 User (~/.aios/user-config.yaml)                 — Cross-project user prefs
 | 2.0 | 2026-02-22 | @sm (River) | Full rewrite: aligned with existing config-resolver.js architecture (5-level hierarchy, existing schemas/merge/Ajv). Removed duplicate ACs. Added Tasks, Dev Notes, Testing, CodeRabbit Integration. Input from @architect (Aria) on config system. Fixed anti-hallucination issues from PO validation. |
 | 2.1 | 2026-02-22 | @po (Pax) | AC4 clarified: added consumer helper module `template-overrides.js` with `getTemplateOverrides()` and `isSectionOptional()`. Updated File List (+2 files), Source Tree, and Dev Notes #7 to explain consumer pattern. Resolved PO validation nice-to-have. |
 | 3.0 | 2026-02-22 | @dev (Dex) | Implementation complete: enriched L1/L2 schemas, created template-overrides.js consumer helper, added template_overrides defaults to framework-config.yaml, created config-override-guide.md docs, 29 new tests (137 total config tests passing). Refactored deny rules in settings.json for granular protection (schemas + template-overrides.js allowed). |
+| 3.1 | 2026-02-22 | @po (Pax) | Story closed. QA PASS, commit d3e3d355 pushed to feat/epic-nogic-code-intelligence. Epic index updated (4/6 stories done). |
 
 ## QA Results
 

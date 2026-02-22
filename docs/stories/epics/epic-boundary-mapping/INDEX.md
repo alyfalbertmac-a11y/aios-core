@@ -46,7 +46,7 @@ Estabelecer separação determinística entre artefatos do **framework AIOS** (i
 
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
-| [BM-4](story-BM-4-config-override-surface.md) | Boundary Schema Enrichment & Template Customization | @dev | 5 | Draft | BM-1 (Done) |
+| [BM-4](story-BM-4-config-override-surface.md) | Boundary Schema Enrichment & Template Customization | @dev | 5 | Done | BM-1 (Done) |
 
 ### Wave 4: Entity Registry Evolution (after Wave 3)
 

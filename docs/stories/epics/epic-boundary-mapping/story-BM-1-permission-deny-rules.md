@@ -7,13 +7,13 @@
 | **Story ID** | BM-1 |
 | **Epic** | Boundary Mapping & Framework-Project Separation |
 | **Type** | Enhancement |
-| **Status** | Ready for Review |
+| **Status** | Done |
 | **Priority** | P0 (Quick Win) |
 | **Points** | 3 |
 | **Agent** | @dev (Dex) |
 | **Quality Gate** | @architect (Aria) |
 | **Blocked By** | - |
-| **Branch** | TBD |
+| **Branch** | feat/epic-nogic-code-intelligence |
 | **Origin** | Research: framework-immutability-patterns (2026-02-22) |
 
 ---
@@ -316,3 +316,4 @@ Ready for Done
 | 1.0 | 2026-02-22 | @pm (Morgan) | Story drafted from tech-search research |
 | 1.1 | 2026-02-22 | @po (Pax) | Validated GO (8.5/10): SF-1 added QA Results + Dev Agent Record sections, SF-2 added CodeRabbit Integration, SF-3 clarified settings.json must be created (not modified), NH-1 removed Task 2.3 ambiguity, NH-2 refined deny/allow semantics. Status Draft → Ready |
 | 1.2 | 2026-02-22 | @dev (Dex) | Implementation complete: Task 1 (settings.json created with deny/allow rules), Task 2 (core-config.yaml boundary toggle added), Task 3 (validation passed). Status Ready → Ready for Review |
+| 1.3 | 2026-02-22 | @po (Pax) | Story closed. QA gate PASS (100/100). Committed as 54397f73, pushed to feat/epic-nogic-code-intelligence. Status Ready for Review → Done |

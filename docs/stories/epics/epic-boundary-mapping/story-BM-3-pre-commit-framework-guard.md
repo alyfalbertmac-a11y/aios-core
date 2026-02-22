@@ -7,7 +7,7 @@
 | **Story ID** | BM-3 |
 | **Epic** | Boundary Mapping & Framework-Project Separation |
 | **Type** | Enhancement |
-| **Status** | Ready for Review |
+| **Status** | Done |
 | **Priority** | P1 |
 | **Points** | 3 |
 | **Agent** | @devops (Gage) |
@@ -415,3 +415,4 @@ All 8 ACs still met. Dynamic config eliminates the HIGH risk of path divergence.
 | 1.1 | 2026-02-22 | @po (Pax) | Validated: Added Tasks (CF-1), Dev Notes (CF-2), Testing (CF-3), CodeRabbit (CF-4), Risks (CF-5), Dependencies (SF-3). Fixed AC ambiguity (SF-1→Husky confirmed). Added protected path list, implementation approach, error message format. Status Draft → Approved |
 | 1.2 | 2026-02-22 | @devops (Gage) | Implementation complete: Task 1 (framework-guard.js created with 9 blocked + 2 allowed patterns), Task 2 (Husky pre-commit integrated), Task 3 (21/21 unit tests passed, npm test zero regressions). Status Approved → Ready for Review |
 | 1.3 | 2026-02-22 | @qa (Quinn) | QA Round 1: PASS. Refactored to dynamic config: paths read from core-config.yaml boundary.protected/exceptions. Added globToRegex(), parseYamlList(), fallback arrays. 35/35 tests passed. HIGH risk (path divergence) eliminated. QA Round 2: PASS. |
+| 1.4 | 2026-02-22 | @po (Pax) | Story closed via `*close-story`. Commit `372cbbdf` pushed to remote. Status → Done. |

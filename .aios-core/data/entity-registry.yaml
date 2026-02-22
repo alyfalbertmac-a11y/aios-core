@@ -1,7 +1,7 @@
 metadata:
   version: 1.0.0
-  lastUpdated: '2026-02-22T04:50:37.613Z'
-  entityCount: 713
+  lastUpdated: '2026-02-22T21:41:01.099Z'
+  entityCount: 715
   checksumAlgorithm: sha256
   resolutionRate: 100
 entities:
@@ -10150,8 +10150,8 @@ entities:
         score: 0.4
         constraints: []
         extensionPoints: []
-      checksum: sha256:7683d294c087dd5c9ac6017a1fbfccef4d5e1e6234d3102f05338c5f01aa1453
-      lastVerified: '2026-02-22T04:50:37.608Z'
+      checksum: sha256:c96802e7216a9d45aaba5a90d0708decd0bb1866143d5f81e803affef0fb66cd
+      lastVerified: '2026-02-22T05:10:42.472Z'
     json-formatter:
       path: .aios-core/core/graph-dashboard/formatters/json-formatter.js
       type: module
@@ -11830,6 +11830,41 @@ entities:
         extensionPoints: []
       checksum: sha256:dd025894f8f0d3bd22a147dbc0debef8b83e96f3c59483653404b3cd5a01d5aa
       lastVerified: '2026-02-22T00:44:31.646Z'
+    core-config:
+      path: .aios-core/core-config.yaml
+      type: module
+      purpose: Core MCPs - no API keys required
+      keywords:
+        - core
+        - config
+        - boundary
+        - mapping
+        - framework-project
+        - separation
+        - (epic
+      usedBy: []
+      dependencies: []
+      adaptability:
+        score: 0.4
+        constraints: []
+        extensionPoints: []
+      checksum: sha256:1005d2dead63377c519713946263c8d5e944eb68f2933da6dee73fb727bed6c9
+      lastVerified: '2026-02-22T14:30:24.684Z'
+    template-overrides:
+      path: .aios-core/core/config/template-overrides.js
+      type: module
+      purpose: Entity at .aios-core\core\config\template-overrides.js
+      keywords:
+        - template
+        - overrides
+      usedBy: []
+      dependencies: []
+      adaptability:
+        score: 0.4
+        constraints: []
+        extensionPoints: []
+      checksum: sha256:470653a32dd808989f84b539f8b2e370cd617d91aa1665b9f9009d7e3e7b3b4a
+      lastVerified: '2026-02-22T21:24:49.063Z'
   agents:
     aios-master:
       path: .aios-core/development/agents/aios-master.md
@@ -12607,21 +12642,23 @@ entities:
       checksum: sha256:ae3f98570fa6cbd714ecd0aa2f44c7db005f0469b5bd04191d8da3b133bc65f1
       lastVerified: '2026-02-22T00:44:31.669Z'
     MEMORY:
-      path: .aios-core/development/agents/qa/MEMORY.md
+      path: .aios-core/development/agents/ux/MEMORY.md
       type: agent
-      purpose: QA Agent Memory (Quinn)
+      purpose: UX Design Expert Agent Memory (Uma)
       keywords:
         - memory
+        - design
+        - expert
         - agent
-        - (quinn)
+        - (uma)
       usedBy: []
       dependencies: []
       adaptability:
         score: 0.3
         constraints: []
         extensionPoints: []
-      checksum: sha256:2d6c8fa60c806678f3574e0a595daf6ab6781cd24557b7413cf79477157950a7
-      lastVerified: '2026-02-22T04:35:08.533Z'
+      checksum: sha256:ac8efa721d1df8df9fa5fa7821017913aac5ec6997cf1d038805fc3cf300b856
+      lastVerified: '2026-02-22T21:41:01.098Z'
   checklists:
     agent-quality-gate:
       path: .aios-core/development/checklists/agent-quality-gate.md
