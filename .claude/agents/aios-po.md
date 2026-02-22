@@ -21,6 +21,7 @@ hooks:
           command: ".claude/hooks/enforce-git-push-authority.sh"
 skills:
   - synapse:tasks:diagnose-synapse
+  - checklist-runner
 ---
 
 # AIOS Product Owner - Autonomous Agent
