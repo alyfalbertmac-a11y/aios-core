@@ -68,6 +68,11 @@ Criar camada de code intelligence provider-agnostic em todas as tasks do AIOS, c
 |-------|-------|-------|--------|--------|------------|
 | [NOG-17](story-NOG-17-e2e-pipeline-audit.md) | E2E Pipeline Audit — Essential vs Cosmetic | @dev + @qa | 5 | Ready | None (Wave 6 complete) |
 
+### Wave 8: Native-First Optimization (from NOG-17 audit + tech research)
+| Story | Title | Agent | Points | Status | Blocked By |
+|-------|-------|-------|--------|--------|------------|
+| [NOG-18](story-NOG-18-synapse-native-first-migration.md) | SYNAPSE Native-First Migration | @dev + @architect | 8 | Draft | NOG-17 |
+
 ### Wave 7: Registry Quality (from GD-7 gap analysis + registry governance research)
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
@@ -80,10 +85,10 @@ Criar camada de code intelligence provider-agnostic em todas as tasks do AIOS, c
 
 | Metric | v1.0 (Nogic) | v2.0 (Architect) | v2.1 (PO Corrections) | v3.0 (NOG-9 Expansion) |
 |--------|-------------|------------------|----------------------|------------------------|
-| Total Stories | 8 | 8 | **9 (+NOG-0)** | **15 (+NOG-9 to NOG-14)** |
-| Total Points | 42 | 26 | **28 (+2 enablement)** | **40 (+12 optimization)** |
-| Estimated Duration | 3-4 sprints | 2-3 sprints | **2-3 sprints** | **3-4 sprints** |
-| Waves | 4 | 4 | **5 (wave-0 added)** | **7 (wave-5,6 added)** |
+| Total Stories | 8 | 8 | **9 (+NOG-0)** | **19 (+NOG-9 to NOG-18)** |
+| Total Points | 42 | 26 | **28 (+2 enablement)** | **53 (+25 optimization+audit+native)** |
+| Estimated Duration | 3-4 sprints | 2-3 sprints | **2-3 sprints** | **4-5 sprints** |
+| Waves | 4 | 4 | **5 (wave-0 added)** | **8 (wave-5,6,6B,7,8 added)** |
 | Provider | Nogic only | Code Graph MCP | **Code Graph MCP** | **Code Graph MCP** |
 | Linguagens | 3 | 25+ | **25+** | **25+** |
 | Vendor Lock-in | Alto | Zero | **Zero** | **Zero** |
@@ -143,6 +148,9 @@ NOG-15 (Scanner Semantic Extractors) — standalone, no blockers
 NOG-16A (Scan Config + Sentinel Filter) — standalone, no blockers
   └── NOG-16B (Dep Classification + Lifecycle) — requires NOG-16A
         └── NOG-16C (Graph Filtering + Focus Mode) — requires NOG-16B
+
+NOG-17 (E2E Pipeline Audit) — post-Wave 6 validation
+  └── NOG-18 (SYNAPSE Native-First Migration) — requires NOG-17 baseline
 ```
 
 ## Provider Strategy
