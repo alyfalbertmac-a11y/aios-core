@@ -6,6 +6,7 @@ const path = require('path');
 const yaml = require('js-yaml');
 const fg = require('fast-glob');
 const crypto = require('crypto');
+const { classifyLayer } = require('../../core/ids/layer-classifier');
 
 const REPO_ROOT = path.resolve(__dirname, '../../..');
 const REGISTRY_PATH = path.resolve(__dirname, '../../data/entity-registry.yaml');
@@ -383,6 +384,7 @@ function scanCategory(config, verbose = false) {
 
     const entity = {
       path: relPath,
+      layer: classifyLayer(relPath),
       type: config.type,
       purpose,
       keywords,

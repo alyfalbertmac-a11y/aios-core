@@ -19,6 +19,7 @@ const {
   REGISTRY_PATH,
 } = require(path.resolve(__dirname, '../../development/scripts/populate-entity-registry.js'));
 const { enrichRegistryEntry } = require(path.resolve(__dirname, '../code-intel/helpers/creation-helper'));
+const { classifyLayer } = require(path.resolve(__dirname, 'layer-classifier'));
 
 const LOCK_FILE = path.resolve(REPO_ROOT, '.aios-core/data/.entity-registry.lock');
 const BACKUP_DIR = path.resolve(REPO_ROOT, '.aios-core/data/registry-backups');
@@ -332,6 +333,7 @@ class RegistryUpdater {
 
     registry.entities[category][entityId] = {
       path: relPath,
+      layer: classifyLayer(relPath),
       type: config.type,
       purpose,
       keywords,
