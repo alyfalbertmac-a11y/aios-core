@@ -7,7 +7,7 @@
 | **Story ID** | GD-11 |
 | **Epic** | CLI Graph Dashboard |
 | **Type** | Enhancement |
-| **Status** | Ready for Review |
+| **Status** | Done |
 | **Priority** | P0 |
 | **Points** | 3 |
 | **Agent** | @dev (Dex) |
@@ -258,3 +258,4 @@ Claude Opus 4.6
 | 1.0 | 2026-02-22 | @sm (River) | Story drafted from tech-search research |
 | 1.1 | 2026-02-22 | @po (Pax) | Validated (9/10 GO): simplified AC 11 (no queue), added Risks section. Status Draft → Ready |
 | 1.2 | 2026-02-22 | @dev (Dex) | Implemented Tasks 1-5. 9 new tests, all 84 pass. Status Ready → Ready for Review |
+| 1.3 | 2026-02-22 | @po (Pax) | Story closed. QA PASS (16/16 AC). Commit 692db856 pushed to feat/epic-nogic-code-intelligence. QA observations O-1/O-2 resolved. Status → Done. |

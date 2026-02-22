@@ -220,6 +220,17 @@ function _buildSidebar(nodes) {
           </div>
         </div>
       </div>
+      <div id="depth-selector" class="filter-section" style="display:none">
+        <div class="section-title">DEPTH</div>
+        <div class="gold-line"></div>
+        <div class="depth-buttons">
+          <button class="depth-btn active" data-depth="1">1</button>
+          <button class="depth-btn" data-depth="2">2</button>
+          <button class="depth-btn" data-depth="3">3</button>
+          <button class="depth-btn" data-depth="all">All</button>
+        </div>
+        <div id="depth-node-count" style="color:${THEME.text.tertiary};font-size:11px;margin-top:6px"></div>
+      </div>
       <div class="filter-section actions">
         <button id="btn-reset" class="action-btn">Reset / Show All</button>
         <button id="btn-exit-focus" class="action-btn" style="display:none">Exit Focus Mode</button>
@@ -337,6 +348,14 @@ function formatAsHtml(graphData, options = {}) {
     input[type="range"]::-moz-range-track {
       height: 4px; border-radius: 2px; background: ${THEME.controls.sliderTrack};
     }
+    .depth-buttons { display: flex; gap: 6px; }
+    .depth-btn {
+      flex: 1; padding: 4px 0; background: ${THEME.border.default}; border: 1px solid ${THEME.border.subtle};
+      color: ${THEME.text.secondary}; border-radius: ${THEME.radius.md}; cursor: pointer;
+      font-size: 12px; font-family: inherit; text-align: center;
+    }
+    .depth-btn:hover { border-color: ${THEME.border.gold}; }
+    .depth-btn.active { background: ${THEME.accent.gold}; color: ${THEME.bg.base}; border-color: ${THEME.accent.gold}; }
     #node-tooltip {
       display: none; position: fixed; z-index: 500;
       background: ${THEME.tooltip.bg}; border: 1px solid ${THEME.tooltip.border};
@@ -516,21 +535,185 @@ function formatAsHtml(graphData, options = {}) {
         }
       });
 
+      // --- BFS Algorithm (GD-12) ---
+      function getNeighborsAtDepth(net, nodeId, maxDepth) {
+        var visited = new Set([nodeId]);
+        var levels = new Map();
+        levels.set(nodeId, 0);
+        var currentLevel = [nodeId];
+        for (var depth = 1; depth <= maxDepth; depth++) {
+          var nextLevel = [];
+          for (var i = 0; i < currentLevel.length; i++) {
+            var neighbors = net.getConnectedNodes(currentLevel[i]);
+            for (var j = 0; j < neighbors.length; j++) {
+              if (!visited.has(neighbors[j])) {
+                visited.add(neighbors[j]);
+                levels.set(neighbors[j], depth);
+                nextLevel.push(neighbors[j]);
+              }
+            }
+          }
+          currentLevel = nextLevel;
+        }
+        return { visited: visited, levels: levels };
+      }
+
+      var currentDepth = 1;
+      var depthLevels = null;
+
+      function applyDepthVisuals(levels) {
+        var updates = [];
+        var baseSizes = {};
+        allNodesData.forEach(function(n) {
+          baseSizes[n.id] = 25; // vis-network default node size
+        });
+
+        nodesDataset.forEach(function(node) {
+          var depth = levels ? levels.get(node.id) : undefined;
+          var update = { id: node.id };
+          if (depth === undefined) {
+            update.hidden = true;
+          } else if (depth === 0) {
+            update.hidden = false;
+            update.opacity = 1.0;
+            update.size = baseSizes[node.id] * 1.2;
+            update.color = {
+              background: node.color.background,
+              border: '${THEME.border.goldStrong}',
+              highlight: { background: node.color.background, border: '${THEME.border.goldStrong}' },
+              hover: { background: node.color.background, border: '${THEME.border.goldStrong}' }
+            };
+          } else if (depth === 1) {
+            update.hidden = false;
+            update.opacity = 1.0;
+            update.size = baseSizes[node.id];
+            update.color = {
+              background: node.color.background,
+              border: '${THEME.border.gold}',
+              highlight: { background: node.color.background, border: '${THEME.border.goldStrong}' },
+              hover: { background: node.color.background, border: '${THEME.border.gold}' }
+            };
+          } else if (depth === 2) {
+            update.hidden = false;
+            update.opacity = 0.7;
+            update.size = baseSizes[node.id] * 0.9;
+            update.color = {
+              background: node.color.background,
+              border: '${THEME.border.subtle}',
+              highlight: { background: node.color.background, border: '${THEME.border.goldStrong}' },
+              hover: { background: node.color.background, border: '${THEME.border.gold}' }
+            };
+          } else {
+            update.hidden = false;
+            update.opacity = 0.4;
+            update.size = baseSizes[node.id] * 0.8;
+            update.color = {
+              background: node.color.background,
+              border: '${THEME.border.subtle}',
+              highlight: { background: node.color.background, border: '${THEME.border.goldStrong}' },
+              hover: { background: node.color.background, border: '${THEME.border.gold}' }
+            };
+          }
+          updates.push(update);
+        });
+        nodesDataset.update(updates);
+      }
+
+      function updateDepthCount() {
+        var countEl = document.getElementById('depth-node-count');
+        if (!countEl) return;
+        var visible = 0;
+        nodesDataset.forEach(function(n) { if (!n.hidden) visible++; });
+        countEl.textContent = 'Nodes: ' + visible + ' / ' + totalEntities;
+      }
+
+      function setDepth(depth) {
+        currentDepth = depth;
+        var depthSelector = document.getElementById('depth-selector');
+        if (!depthSelector) return;
+        var btns = depthSelector.querySelectorAll('.depth-btn');
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].classList.toggle('active', btns[i].getAttribute('data-depth') === String(depth));
+        }
+
+        if (depth === 'all') {
+          // Reset all nodes to visible, remove depth styling
+          var resetUpdates = [];
+          allNodesData.forEach(function(n) {
+            resetUpdates.push({ id: n.id, hidden: false, opacity: n.opacity || 1.0, size: undefined });
+          });
+          nodesDataset.update(resetUpdates);
+          focusNeighbors = null;
+          depthLevels = null;
+        } else {
+          var result = getNeighborsAtDepth(network, focusNodeId, depth);
+          depthLevels = result.levels;
+          focusNeighbors = result.visited;
+          applyDepthVisuals(result.levels);
+        }
+        refreshFilters();
+        updateDepthCount();
+        network.fit({ animation: { duration: 300 } });
+      }
+
       function enterFocusMode(nodeId) {
         focusNodeId = nodeId;
-        var neighbors = network.getConnectedNodes(nodeId);
-        focusNeighbors = new Set([nodeId].concat(neighbors));
+        currentDepth = 1;
+        var result = getNeighborsAtDepth(network, nodeId, 1);
+        depthLevels = result.levels;
+        focusNeighbors = result.visited;
+        applyDepthVisuals(result.levels);
         refreshFilters();
         document.getElementById('btn-exit-focus').style.display = 'block';
+        // Show depth selector
+        var depthSelector = document.getElementById('depth-selector');
+        if (depthSelector) {
+          depthSelector.style.display = 'block';
+          var btns = depthSelector.querySelectorAll('.depth-btn');
+          for (var i = 0; i < btns.length; i++) {
+            btns[i].classList.toggle('active', btns[i].getAttribute('data-depth') === '1');
+          }
+        }
+        updateDepthCount();
         network.fit({ animation: { duration: 300 } });
       }
 
       function exitFocusMode() {
         focusNodeId = null;
         focusNeighbors = null;
+        depthLevels = null;
+        // Restore original node properties
+        var resetUpdates = [];
+        allNodesData.forEach(function(n) {
+          resetUpdates.push({ id: n.id, hidden: false, opacity: n.opacity || 1.0, size: undefined });
+        });
+        nodesDataset.update(resetUpdates);
         refreshFilters();
         document.getElementById('btn-exit-focus').style.display = 'none';
+        // Hide depth selector
+        var depthSelector = document.getElementById('depth-selector');
+        if (depthSelector) depthSelector.style.display = 'none';
       }
+
+      // Depth button click handlers
+      var depthBtns = document.querySelectorAll('.depth-btn');
+      for (var di = 0; di < depthBtns.length; di++) {
+        depthBtns[di].addEventListener('click', function() {
+          if (!focusNodeId) return;
+          var d = this.getAttribute('data-depth');
+          setDepth(d === 'all' ? 'all' : parseInt(d, 10));
+        });
+      }
+
+      // Keyboard shortcuts for depth (GD-12 AC 19)
+      document.addEventListener('keydown', function(e) {
+        if (!focusNodeId) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === '1') setDepth(1);
+        else if (e.key === '2') setDepth(2);
+        else if (e.key === '3') setDepth(3);
+        else if (e.key === 'a' || e.key === 'A') setDepth('all');
+      });
 
       // --- Sidebar Events ---
       document.getElementById('btn-toggle-sidebar').addEventListener('click', function() {
@@ -596,6 +779,19 @@ function formatAsHtml(graphData, options = {}) {
         document.getElementById('search-input').value = '';
         document.getElementById('hide-orphans').checked = false;
         document.getElementById('btn-exit-focus').style.display = 'none';
+
+        // Reset depth state (GD-12 O-3 fix)
+        depthLevels = null;
+        currentDepth = 1;
+        var depthSel = document.getElementById('depth-selector');
+        if (depthSel) depthSel.style.display = 'none';
+
+        // Restore original node properties (clear depth visuals)
+        var resetNodeUpdates = [];
+        allNodesData.forEach(function(n) {
+          resetNodeUpdates.push({ id: n.id, hidden: false, opacity: n.opacity || 1.0, size: undefined });
+        });
+        nodesDataset.update(resetNodeUpdates);
 
         var allBoxes = document.querySelectorAll('#sidebar input[type="checkbox"][data-filter]');
         for (var i = 0; i < allBoxes.length; i++) { allBoxes[i].checked = true; }

@@ -592,6 +592,74 @@ describe('html-formatter', () => {
     });
   });
 
+  describe('GD-12: Multi-Level Depth Expansion', () => {
+    it('should include depth selector with 4 buttons [1][2][3][All]', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="depth-selector"');
+      expect(html).toContain('data-depth="1"');
+      expect(html).toContain('data-depth="2"');
+      expect(html).toContain('data-depth="3"');
+      expect(html).toContain('data-depth="all"');
+    });
+
+    it('should include depth node count display element', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="depth-node-count"');
+    });
+
+    it('should include getNeighborsAtDepth BFS function in script', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('function getNeighborsAtDepth');
+      expect(html).toContain('visited');
+      expect(html).toContain('levels');
+    });
+
+    it('should include BFS visited Set and levels Map pattern', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('new Set([nodeId])');
+      expect(html).toContain('new Map()');
+      expect(html).toContain('getConnectedNodes');
+    });
+
+    it('should include depth button click handler calling getNeighborsAtDepth', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('depth-btn');
+      expect(html).toContain('setDepth');
+      expect(html).toContain('getNeighborsAtDepth');
+    });
+
+    it('should include edge visibility via node-based filtering', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      // vis-network auto-hides edges when nodes are hidden
+      // AC 11: edge visible when BOTH nodes visible — handled by focusNeighbors filter
+      expect(html).toContain('visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to)');
+    });
+
+    it('should include keyboard shortcut listeners for 1/2/3/A', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain("e.key === '1'");
+      expect(html).toContain("e.key === '2'");
+      expect(html).toContain("e.key === '3'");
+      expect(html).toContain("e.key === 'a'");
+      expect(html).toContain("e.key === 'A'");
+    });
+
+    it('should have depth selector hidden by default (display: none)', () => {
+      const sidebar = _buildSidebar(MOCK_GRAPH_DATA.nodes);
+      expect(sidebar).toContain('id="depth-selector"');
+      expect(sidebar).toContain('style="display:none"');
+    });
+
+    it('should use THEME tokens for depth button styling (no hardcoded hex)', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      // Depth buttons use THEME.border.goldStrong, THEME.border.gold, THEME.border.subtle
+      expect(html).toContain(THEME.border.goldStrong);
+      expect(html).toContain(THEME.border.gold);
+      expect(html).toContain(THEME.border.subtle);
+      expect(html).toContain(THEME.accent.gold);
+    });
+  });
+
   describe('CLI integration (FORMAT_MAP)', () => {
     it('should have html in FORMAT_MAP', () => {
       const { FORMAT_MAP } = require('../../.aios-core/core/graph-dashboard/cli');
