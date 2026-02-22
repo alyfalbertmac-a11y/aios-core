@@ -40,6 +40,15 @@ const ADAPTABILITY_DEFAULTS = {
   tool: 0.7
 };
 
+const EXTERNAL_TOOLS = new Set([
+  'coderabbit', 'git', 'github-cli', 'docker', 'supabase', 'browser',
+  'ffmpeg', 'n8n', 'context7', 'playwright', 'apify', 'clickup',
+  'jira', 'slack', 'exa', 'eslint', 'jest', 'npm', 'node',
+  'docker-gateway', 'desktop-commander', 'railway'
+]);
+
+const DEPRECATED_PATTERNS = [/^old[-_]/, /^backup[-_]/, /deprecated/i, /^legacy[-_]/];
+
 const SENTINEL_VALUES = new Set(['n/a', 'na', 'none', 'tbd', 'todo', '-', '']);
 
 function isSentinel(value) {
@@ -349,16 +358,39 @@ function scanCategory(config, verbose = false) {
 
     // Merge all dependencies (deduplicated — each extractor already filters sentinel/noise)
     const dependencies = [...new Set([...baseDeps, ...yamlDeps, ...mdDeps])];
+
+    // Extract lifecycle override from YAML frontmatter or metadata (NOG-16B AC5)
+    let lifecycleOverride = null;
+    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    if (frontmatterMatch) {
+      const lfMatch = frontmatterMatch[1].match(/^lifecycle:\s*(.+)$/m);
+      if (lfMatch) lifecycleOverride = lfMatch[1].trim();
+    }
+    if (!lifecycleOverride) {
+      const yamlBlockMatch = content.match(/```yaml\n([\s\S]*?)```/);
+      if (yamlBlockMatch) {
+        const lfMatch = yamlBlockMatch[1].match(/^lifecycle:\s*(.+)$/m);
+        if (lfMatch) lifecycleOverride = lfMatch[1].trim();
+      }
+    }
+    if (!lifecycleOverride) {
+      const inlineMatch = content.match(/^lifecycle:\s*(.+)$/m);
+      if (inlineMatch) lifecycleOverride = inlineMatch[1].trim();
+    }
+
     const checksum = computeChecksum(filePath);
     const defaultScore = ADAPTABILITY_DEFAULTS[config.type] || 0.5;
 
-    entities[entityId] = {
+    const entity = {
       path: relPath,
       type: config.type,
       purpose,
       keywords,
       usedBy: [],
       dependencies,
+      externalDeps: [],
+      plannedDeps: [],
+      lifecycle: 'experimental',
       adaptability: {
         score: defaultScore,
         constraints: [],
@@ -367,6 +399,12 @@ function scanCategory(config, verbose = false) {
       checksum,
       lastVerified: new Date().toISOString()
     };
+
+    if (lifecycleOverride) {
+      entity._lifecycleOverride = lifecycleOverride;
+    }
+
+    entities[entityId] = entity;
   }
 
   return entities;
@@ -432,6 +470,54 @@ function resolveUsedBy(allEntities) {
   }
 }
 
+function classifyDependencies(allEntities, nameIndex) {
+  for (const entities of Object.values(allEntities)) {
+    for (const entity of Object.values(entities)) {
+      const internal = [];
+      const external = [];
+      const planned = [];
+      for (const dep of entity.dependencies) {
+        if (nameIndex.has(dep)) {
+          internal.push(dep);
+        } else if (EXTERNAL_TOOLS.has(dep.toLowerCase())) {
+          external.push(dep);
+        } else {
+          planned.push(dep);
+        }
+      }
+      entity.dependencies = internal;
+      entity.externalDeps = external;
+      entity.plannedDeps = planned;
+    }
+  }
+}
+
+function detectLifecycle(entityId, entity) {
+  if (entity._lifecycleOverride) {
+    const val = entity._lifecycleOverride;
+    delete entity._lifecycleOverride;
+    return val;
+  }
+  for (const pat of DEPRECATED_PATTERNS) {
+    if (pat.test(entityId)) return 'deprecated';
+  }
+  const hasDeps = entity.dependencies.length > 0 ||
+    (entity.externalDeps && entity.externalDeps.length > 0) ||
+    (entity.plannedDeps && entity.plannedDeps.length > 0);
+  const hasUsedBy = entity.usedBy.length > 0;
+  if (!hasDeps && !hasUsedBy) return 'orphan';
+  if (hasUsedBy) return 'production';
+  return 'experimental';
+}
+
+function assignLifecycles(allEntities) {
+  for (const [, entities] of Object.entries(allEntities)) {
+    for (const [entityId, entity] of Object.entries(entities)) {
+      entity.lifecycle = detectLifecycle(entityId, entity);
+    }
+  }
+}
+
 function populate(options = {}) {
   const verbose = options.verbose || process.argv.includes('--verbose') || process.env.AIOS_DEBUG === 'true';
 
@@ -452,8 +538,16 @@ function populate(options = {}) {
   console.log('[IDS] Resolving usedBy relationships...');
   resolveUsedBy(allEntities);
 
-  // Resolution rate metric
+  // Classify dependencies into internal, external, planned (NOG-16B)
   const nameIndex = buildNameIndex(allEntities);
+  console.log('[IDS] Classifying dependencies (internal/external/planned)...');
+  classifyDependencies(allEntities, nameIndex);
+
+  // Assign lifecycle states (NOG-16B)
+  console.log('[IDS] Detecting entity lifecycle states...');
+  assignLifecycles(allEntities);
+
+  // Resolution rate metric (uses internal deps only after classification)
   const { total, resolved, unresolved } = countResolution(allEntities, nameIndex);
   const rate = total > 0 ? Math.round(resolved / total * 100) : 0;
   console.log(`[IDS] Resolution rate: ${rate}% (${resolved}/${total} deps resolved, ${unresolved} unresolved)`);
@@ -537,6 +631,9 @@ module.exports = {
   resolveUsedBy,
   buildNameIndex,
   countResolution,
+  classifyDependencies,
+  detectLifecycle,
+  assignLifecycles,
   isSentinel,
   isNoise,
   SCAN_CONFIG,
@@ -544,6 +641,8 @@ module.exports = {
   SENTINEL_VALUES,
   YAML_DEP_FIELDS,
   KNOWN_AGENTS,
+  EXTERNAL_TOOLS,
+  DEPRECATED_PATTERNS,
   REPO_ROOT,
   REGISTRY_PATH
 };

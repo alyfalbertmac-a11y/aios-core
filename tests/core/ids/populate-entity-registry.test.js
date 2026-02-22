@@ -14,10 +14,15 @@ const {
   resolveUsedBy,
   buildNameIndex,
   countResolution,
+  classifyDependencies,
+  detectLifecycle,
+  assignLifecycles,
   isSentinel,
   isNoise,
   SCAN_CONFIG,
   SENTINEL_VALUES,
+  EXTERNAL_TOOLS,
+  DEPRECATED_PATTERNS,
 } = require('../../../.aios-core/development/scripts/populate-entity-registry');
 
 const FIXTURES = path.resolve(__dirname, 'fixtures');
@@ -391,7 +396,7 @@ describe('populate-entity-registry (AC: 3, 4, 12)', () => {
           'task-a': { path: 'a.md', dependencies: ['lib'], usedBy: [] },
         },
         modules: {
-          'lib': { path: 'lib.js', dependencies: [], usedBy: [] },
+          lib: { path: 'lib.js', dependencies: [], usedBy: [] },
         },
       };
 
@@ -412,7 +417,7 @@ describe('populate-entity-registry (AC: 3, 4, 12)', () => {
           },
         },
         scripts: {
-          'helper': {
+          helper: {
             path: '.aios-core/development/scripts/helper.js',
             type: 'script',
             dependencies: [],
@@ -519,7 +524,7 @@ describe('populate-entity-registry (AC: 3, 4, 12)', () => {
           'task-a': { path: '.aios-core/development/tasks/task-a.md', dependencies: [], usedBy: [] },
         },
         scripts: {
-          'helper': { path: '.aios-core/development/scripts/helper.js', dependencies: [], usedBy: [] },
+          helper: { path: '.aios-core/development/scripts/helper.js', dependencies: [], usedBy: [] },
         },
       };
       const index = buildNameIndex(entities);
@@ -568,6 +573,235 @@ describe('populate-entity-registry (AC: 3, 4, 12)', () => {
       const mdDeps = extractMarkdownCrossReferences(content, 'dev');
       const allDeps = new Set([...baseDeps, ...yamlDeps, ...mdDeps]);
       expect(allDeps.size).toBeGreaterThanOrEqual(40);
+    });
+  });
+
+  describe('EXTERNAL_TOOLS (NOG-16B AC2)', () => {
+    it('contains all expected external tools', () => {
+      expect(EXTERNAL_TOOLS.has('coderabbit')).toBe(true);
+      expect(EXTERNAL_TOOLS.has('git')).toBe(true);
+      expect(EXTERNAL_TOOLS.has('supabase')).toBe(true);
+      expect(EXTERNAL_TOOLS.has('browser')).toBe(true);
+      expect(EXTERNAL_TOOLS.has('docker')).toBe(true);
+      expect(EXTERNAL_TOOLS.has('context7')).toBe(true);
+    });
+
+    it('does not contain internal entity names', () => {
+      expect(EXTERNAL_TOOLS.has('dev-develop-story')).toBe(false);
+      expect(EXTERNAL_TOOLS.has('execute-checklist')).toBe(false);
+    });
+  });
+
+  describe('classifyDependencies() (NOG-16B AC1, AC2, AC3)', () => {
+    it('classifies internal deps (resolved via nameIndex)', () => {
+      const entities = {
+        tasks: {
+          'task-a': { dependencies: ['util-x', 'coderabbit', 'unknown-module'], usedBy: [] },
+        },
+        scripts: {
+          'util-x': { path: 'x.js', dependencies: [], usedBy: [] },
+        },
+      };
+      const nameIndex = buildNameIndex(entities);
+      classifyDependencies(entities, nameIndex);
+
+      expect(entities.tasks['task-a'].dependencies).toEqual(['util-x']);
+      expect(entities.tasks['task-a'].externalDeps).toEqual(['coderabbit']);
+      expect(entities.tasks['task-a'].plannedDeps).toEqual(['unknown-module']);
+    });
+
+    it('classifies external tools case-insensitively', () => {
+      const entities = {
+        tasks: {
+          'task-a': { dependencies: ['Git', 'SUPABASE', 'Browser'], usedBy: [] },
+        },
+      };
+      const nameIndex = buildNameIndex(entities);
+      classifyDependencies(entities, nameIndex);
+
+      expect(entities.tasks['task-a'].dependencies).toEqual([]);
+      expect(entities.tasks['task-a'].externalDeps).toEqual(['Git', 'SUPABASE', 'Browser']);
+      expect(entities.tasks['task-a'].plannedDeps).toEqual([]);
+    });
+
+    it('puts unresolved non-tool deps into plannedDeps', () => {
+      const entities = {
+        tasks: {
+          'task-a': { dependencies: ['code-intel', 'permissions-manager', 'future-handler'], usedBy: [] },
+        },
+      };
+      const nameIndex = buildNameIndex(entities);
+      classifyDependencies(entities, nameIndex);
+
+      expect(entities.tasks['task-a'].dependencies).toEqual([]);
+      expect(entities.tasks['task-a'].externalDeps).toEqual([]);
+      expect(entities.tasks['task-a'].plannedDeps).toEqual(['code-intel', 'permissions-manager', 'future-handler']);
+    });
+
+    it('handles empty dependencies', () => {
+      const entities = {
+        tasks: {
+          'task-a': { dependencies: [], usedBy: [] },
+        },
+      };
+      const nameIndex = buildNameIndex(entities);
+      classifyDependencies(entities, nameIndex);
+
+      expect(entities.tasks['task-a'].dependencies).toEqual([]);
+      expect(entities.tasks['task-a'].externalDeps).toEqual([]);
+      expect(entities.tasks['task-a'].plannedDeps).toEqual([]);
+    });
+
+    it('preserves total dep count across classification (no data loss)', () => {
+      const entities = {
+        tasks: {
+          'task-a': { dependencies: ['util-x', 'coderabbit', 'future-mod', 'git'], usedBy: [] },
+        },
+        scripts: {
+          'util-x': { path: 'x.js', dependencies: [], usedBy: [] },
+        },
+      };
+      const nameIndex = buildNameIndex(entities);
+      const originalCount = entities.tasks['task-a'].dependencies.length;
+      classifyDependencies(entities, nameIndex);
+
+      const totalAfter = entities.tasks['task-a'].dependencies.length +
+        entities.tasks['task-a'].externalDeps.length +
+        entities.tasks['task-a'].plannedDeps.length;
+      expect(totalAfter).toBe(originalCount);
+    });
+  });
+
+  describe('DEPRECATED_PATTERNS (NOG-16B AC4)', () => {
+    it('matches deprecated naming patterns', () => {
+      expect(DEPRECATED_PATTERNS.some((p) => p.test('old-module'))).toBe(true);
+      expect(DEPRECATED_PATTERNS.some((p) => p.test('backup-data'))).toBe(true);
+      expect(DEPRECATED_PATTERNS.some((p) => p.test('legacy-handler'))).toBe(true);
+      expect(DEPRECATED_PATTERNS.some((p) => p.test('deprecated-task'))).toBe(true);
+    });
+
+    it('does not match normal entity names', () => {
+      expect(DEPRECATED_PATTERNS.some((p) => p.test('dev-develop-story'))).toBe(false);
+      expect(DEPRECATED_PATTERNS.some((p) => p.test('create-doc'))).toBe(false);
+      expect(DEPRECATED_PATTERNS.some((p) => p.test('bold-strategy'))).toBe(false);
+    });
+  });
+
+  describe('detectLifecycle() (NOG-16B AC4)', () => {
+    it('returns production when entity has usedBy', () => {
+      const entity = { dependencies: ['a'], externalDeps: [], plannedDeps: [], usedBy: ['consumer-x'] };
+      expect(detectLifecycle('my-task', entity)).toBe('production');
+    });
+
+    it('returns orphan when entity has no deps and no usedBy', () => {
+      const entity = { dependencies: [], externalDeps: [], plannedDeps: [], usedBy: [] };
+      expect(detectLifecycle('lonely-entity', entity)).toBe('orphan');
+    });
+
+    it('returns experimental when entity has deps but no usedBy', () => {
+      const entity = { dependencies: ['something'], externalDeps: [], plannedDeps: [], usedBy: [] };
+      expect(detectLifecycle('new-module', entity)).toBe('experimental');
+    });
+
+    it('returns deprecated when name matches deprecated patterns', () => {
+      const entity = { dependencies: ['a'], externalDeps: [], plannedDeps: [], usedBy: ['b'] };
+      expect(detectLifecycle('old-handler', entity)).toBe('deprecated');
+      expect(detectLifecycle('backup-data', entity)).toBe('deprecated');
+      expect(detectLifecycle('legacy-module', entity)).toBe('deprecated');
+      expect(detectLifecycle('some-deprecated-thing', entity)).toBe('deprecated');
+    });
+
+    it('considers externalDeps for non-orphan detection', () => {
+      const entity = { dependencies: [], externalDeps: ['git'], plannedDeps: [], usedBy: [] };
+      expect(detectLifecycle('my-tool', entity)).toBe('experimental');
+    });
+
+    it('considers plannedDeps for non-orphan detection', () => {
+      const entity = { dependencies: [], externalDeps: [], plannedDeps: ['future-lib'], usedBy: [] };
+      expect(detectLifecycle('my-tool', entity)).toBe('experimental');
+    });
+  });
+
+  describe('detectLifecycle() override (NOG-16B AC5)', () => {
+    it('uses _lifecycleOverride when present', () => {
+      const entity = {
+        dependencies: [],
+        externalDeps: [],
+        plannedDeps: [],
+        usedBy: [],
+        _lifecycleOverride: 'production',
+      };
+      expect(detectLifecycle('orphan-looking-entity', entity)).toBe('production');
+    });
+
+    it('cleans up _lifecycleOverride after use', () => {
+      const entity = {
+        dependencies: [],
+        externalDeps: [],
+        plannedDeps: [],
+        usedBy: [],
+        _lifecycleOverride: 'deprecated',
+      };
+      detectLifecycle('some-entity', entity);
+      expect(entity._lifecycleOverride).toBeUndefined();
+    });
+  });
+
+  describe('assignLifecycles() (NOG-16B AC4)', () => {
+    it('assigns lifecycle to all entities', () => {
+      const entities = {
+        tasks: {
+          'task-a': { dependencies: ['util-x'], externalDeps: [], plannedDeps: [], usedBy: ['task-b'] },
+          'task-b': { dependencies: [], externalDeps: [], plannedDeps: [], usedBy: [] },
+        },
+        scripts: {
+          'util-x': { dependencies: [], externalDeps: [], plannedDeps: [], usedBy: ['task-a'] },
+        },
+      };
+      assignLifecycles(entities);
+
+      expect(entities.tasks['task-a'].lifecycle).toBe('production');
+      expect(entities.tasks['task-b'].lifecycle).toBe('orphan');
+      expect(entities.scripts['util-x'].lifecycle).toBe('production');
+    });
+  });
+
+  describe('schema backward compatibility (NOG-16B AC6)', () => {
+    it('new fields are additive — dependencies, usedBy still work', () => {
+      const entities = {
+        tasks: {
+          'task-a': {
+            path: 'a.md',
+            type: 'task',
+            dependencies: ['util-x', 'coderabbit'],
+            usedBy: [],
+          },
+        },
+        scripts: {
+          'util-x': {
+            path: 'x.js',
+            type: 'script',
+            dependencies: [],
+            usedBy: [],
+          },
+        },
+      };
+
+      // Before classification — dependencies has all deps
+      expect(entities.tasks['task-a'].dependencies).toHaveLength(2);
+
+      resolveUsedBy(entities);
+      expect(entities.scripts['util-x'].usedBy).toContain('task-a');
+
+      const nameIndex = buildNameIndex(entities);
+      classifyDependencies(entities, nameIndex);
+
+      // After classification — internal deps preserved, new fields added
+      expect(entities.tasks['task-a'].dependencies).toEqual(['util-x']);
+      expect(entities.tasks['task-a'].externalDeps).toEqual(['coderabbit']);
+      expect(entities.tasks['task-a'].plannedDeps).toEqual([]);
+      // usedBy still intact
+      expect(entities.scripts['util-x'].usedBy).toContain('task-a');
     });
   });
 

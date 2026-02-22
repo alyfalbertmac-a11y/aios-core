@@ -8,7 +8,7 @@
 # - File types for categorization
 #
 version: 4.2.13
-generated_at: "2026-02-22T00:25:27.578Z"
+generated_at: "2026-02-22T00:56:32.130Z"
 generator: scripts/generate-install-manifest.js
 file_count: 1033
 files:
@@ -1117,9 +1117,9 @@ files:
     type: data
     size: 34235
   - path: data/entity-registry.yaml
-    hash: sha256:dbc95361c9b1a2c0488e501d6e90fd9dab09877f42e366b7c29f6fe4840ddbdf
+    hash: sha256:d48ebdf094f284f6a3e005898029076f5b1918c556a3b67d985c24885beb8add
     type: data
-    size: 437429
+    size: 488884
   - path: data/learned-patterns.yaml
     hash: sha256:24ac0b160615583a0ff783d3da8af80b7f94191575d6db2054ec8e10a3f945dc
     type: data
@@ -1185,9 +1185,9 @@ files:
     type: agent
     size: 22904
   - path: development/agents/devops.md
-    hash: sha256:fe3cd24e22f603a07ef16857cfe82bd6ae87a32365e2d33146ec2180c94d1248
+    hash: sha256:143dc22da0d91fbeb2212562f92dfc51ddb4a71029e8b7b85ea0e180dc61e018
     type: agent
-    size: 20933
+    size: 20670
   - path: development/agents/pm.md
     hash: sha256:e724b248d30c0e67e316e72d5d408c4c57b2da0bfe0cc014e48415531703e765
     type: agent
@@ -1385,9 +1385,9 @@ files:
     type: script
     size: 24167
   - path: development/scripts/populate-entity-registry.js
-    hash: sha256:81cebf1518d160d86ff3fdd4f38cd8fb888897ba9f82f0d05a90f733949cda43
+    hash: sha256:10a9d837a4a522a77ac561c5d5a632e4a2f13f2cc2d853eb6bd7fbb4a5052102
     type: script
-    size: 17955
+    size: 21283
   - path: development/scripts/refactoring-suggester.js
     hash: sha256:d5183f79fae9dc4bf4d3c9136b3622e43a63643a7df622742c350931e45f18f4
     type: script
@@ -1485,9 +1485,9 @@ files:
     type: script
     size: 18196
   - path: development/scripts/unified-activation-pipeline.js
-    hash: sha256:34fd4ca8c0e845a9596d708a0eec7545ef59059327d303cf50f20e3f09d45c2f
+    hash: sha256:b4daf67b5d9adfa355c6f017c6bb5d790387f1f88a7ecbc7595285d9072b0d34
     type: script
-    size: 30126
+    size: 29838
   - path: development/scripts/usage-tracker.js
     hash: sha256:b3079713787de7c6ac38a742255861f04e8359ef1b227836040920a64b7e8aac
     type: script
