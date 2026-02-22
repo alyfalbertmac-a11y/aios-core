@@ -1,6 +1,6 @@
 metadata:
   version: 1.0.0
-  lastUpdated: '2026-02-21T20:03:52.773Z'
+  lastUpdated: '2026-02-22T00:24:09.687Z'
   entityCount: 712
   checksumAlgorithm: sha256
   resolutionRate: 69
@@ -6245,8 +6245,8 @@ entities:
         score: 0.7
         constraints: []
         extensionPoints: []
-      checksum: sha256:19ab273852a40ecee6e13a6061182f8bcea45220a47b4385ff2b580d9f497d9f
-      lastVerified: '2026-02-21T20:03:52.666Z'
+      checksum: sha256:81cebf1518d160d86ff3fdd4f38cd8fb888897ba9f82f0d05a90f733949cda43
+      lastVerified: '2026-02-22T00:24:09.679Z'
     refactoring-suggester:
       path: .aios-core/development/scripts/refactoring-suggester.js
       type: script
