@@ -47,7 +47,7 @@ Criar camada de code intelligence provider-agnostic em todas as tasks do AIOS, c
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
 | [NOG-7](story-NOG-7-devops-impact-analysis.md) | DevOps Pre-Push Impact Analysis | @devops | 2 | Done | NOG-1, NOG-4 |
-| [NOG-8](story-NOG-8-squad-creator-awareness.md) | Squad Creator with Codebase Awareness | squad-creator | 3 | Draft | NOG-1, NOG-2 |
+| [NOG-8](story-NOG-8-squad-creator-awareness.md) | Squad Creator with Codebase Awareness | squad-creator | 3 | Done | ~~NOG-1~~, ~~NOG-2~~ |
 
 ### Wave 5: Research & Optimization (from NOG-9)
 | Story | Title | Agent | Points | Status | Blocked By |
@@ -66,20 +66,25 @@ Criar camada de code intelligence provider-agnostic em todas as tasks do AIOS, c
 ### Wave 6B: Pipeline Audit (post-Wave 6 validation)
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
-| [NOG-17](story-NOG-17-e2e-pipeline-audit.md) | E2E Pipeline Audit — Essential vs Cosmetic | @dev + @qa | 5 | Ready | None (Wave 6 complete) |
+| [NOG-17](story-NOG-17-e2e-pipeline-audit.md) | E2E Pipeline Audit — Essential vs Cosmetic | @dev + @qa | 5 | Done | None (Wave 6 complete) |
 
 ### Wave 8: Native-First Optimization (from NOG-17 audit + tech research)
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
-| [NOG-18](story-NOG-18-synapse-native-first-migration.md) | SYNAPSE Native-First Migration | @dev + @architect | 8 | InReview | NOG-17 |
+| [NOG-18](story-NOG-18-synapse-native-first-migration.md) | SYNAPSE Native-First Migration | @dev + @architect | 8 | Done | ~~NOG-17~~ |
 
 ### Wave 8B: Native-First Follow-up (descoped from NOG-18)
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
 | [NOG-19](story-NOG-19-pipeline-audit-validation.md) | Pipeline Audit Validation | @dev + @qa | 3 | Done | NOG-18 |
-| [NOG-20](story-NOG-20-agent-frontmatter-validation.md) | Agent Frontmatter & Validation | @dev | 3 | Ready for Review | NOG-18 |
-| [NOG-21](story-NOG-21-greeting-builder-native-migration.md) | Greeting Builder Native Migration | @dev | 3 | Ready | NOG-18 |
-| [NOG-22](story-NOG-22-agent-skill-discovery-mapping.md) | Agent Skill Discovery & Mapping | @analyst + @dev | 5 | Draft | NOG-20 |
+| [NOG-20](story-NOG-20-agent-frontmatter-validation.md) | Agent Frontmatter & Validation | @dev | 3 | Done | NOG-18 |
+| [NOG-21](story-NOG-21-greeting-builder-native-migration.md) | Greeting Builder Native Migration | @dev | 3 | Done | NOG-18 |
+| [NOG-22](story-NOG-22-agent-skill-discovery-mapping.md) | Agent Skill Discovery & Mapping | @analyst + @dev | 5 | Done | ~~NOG-20~~ |
+
+### Wave 9: Post-Epic Validation
+| Story | Title | Agent | Points | Status | Blocked By |
+|-------|-------|-------|--------|--------|------------|
+| [NOG-23](story-NOG-23-post-migration-validation.md) | Post-Migration Validation & Benchmark | @dev + @analyst | 3 | Ready for Review | None |
 
 ### Wave 7: Registry Quality (from GD-7 gap analysis + registry governance research)
 | Story | Title | Agent | Points | Status | Blocked By |
