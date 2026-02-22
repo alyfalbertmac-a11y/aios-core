@@ -6,15 +6,17 @@ const {
   _buildVisNodes,
   _buildVisEdges,
   _buildLegend,
+  _buildSidebar,
   CATEGORY_COLORS,
+  LIFECYCLE_STYLES,
 } = require('../../.aios-core/core/graph-dashboard/formatters/html-formatter');
 
 const MOCK_GRAPH_DATA = {
   nodes: [
-    { id: 'dev', label: 'dev', group: 'agents', path: '.aios-core/agents/dev.md', dependencies: ['task-a'] },
-    { id: 'task-a', label: 'task-a', group: 'tasks', path: '.aios-core/tasks/task-a.md', dependencies: [] },
-    { id: 'tmpl-story', label: 'story-tmpl', group: 'templates', path: '.aios-core/templates/story-tmpl.yaml' },
-    { id: 'script-1', label: 'build.js', group: 'scripts', path: '.aios-core/scripts/build.js' },
+    { id: 'dev', label: 'dev', group: 'agents', path: '.aios-core/agents/dev.md', lifecycle: 'production' },
+    { id: 'task-a', label: 'task-a', group: 'tasks', path: '.aios-core/tasks/task-a.md', lifecycle: 'production' },
+    { id: 'tmpl-story', label: 'story-tmpl', group: 'templates', path: '.aios-core/templates/story-tmpl.yaml', lifecycle: 'experimental' },
+    { id: 'script-1', label: 'build.js', group: 'scripts', path: '.aios-core/scripts/build.js', lifecycle: 'orphan' },
   ],
   edges: [
     { from: 'dev', to: 'task-a' },
@@ -33,13 +35,10 @@ describe('html-formatter', () => {
       expect(html).toContain('</html>');
     });
 
-    it('should embed JSON data that can be parsed back', () => {
+    it('should embed JSON data for DataView filtering', () => {
       const html = formatAsHtml(MOCK_GRAPH_DATA);
-      const nodesMatch = html.match(/new vis\.DataSet\((\[.*?\])\)/s);
-      expect(nodesMatch).toBeTruthy();
-      const parsed = JSON.parse(nodesMatch[1]);
-      expect(parsed.length).toBe(4);
-      expect(parsed[0].id).toBe('dev');
+      expect(html).toContain('vis.DataSet');
+      expect(html).toContain('vis.DataView');
     });
 
     it('should include meta charset utf-8', () => {
@@ -58,9 +57,9 @@ describe('html-formatter', () => {
       expect(html).toContain('iterations: 100');
     });
 
-    it('should include legend with all 11 categories', () => {
+    it('should include sidebar with all 11 categories', () => {
       const html = formatAsHtml(MOCK_GRAPH_DATA);
-      expect(html).toContain('id="legend"');
+      expect(html).toContain('id="sidebar"');
       const allCategories = [
         'agents', 'tasks', 'templates', 'checklists', 'workflows',
         'scripts/task', 'scripts/engine', 'scripts/infra',
@@ -74,7 +73,7 @@ describe('html-formatter', () => {
     it('should generate valid HTML for empty graph', () => {
       const html = formatAsHtml({ nodes: [], edges: [] });
       expect(html).toContain('<!DOCTYPE html>');
-      expect(html).toContain('new vis.DataSet([])');
+      expect(html).toContain('vis.DataSet');
       expect(html).toContain('</html>');
     });
 
@@ -91,6 +90,47 @@ describe('html-formatter', () => {
     it('should default refreshInterval to 5 when autoRefresh is true', () => {
       const html = formatAsHtml(MOCK_GRAPH_DATA, { autoRefresh: true });
       expect(html).toContain('content="5"');
+    });
+
+    it('should include search input', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="search-input"');
+    });
+
+    it('should include reset button', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="btn-reset"');
+      expect(html).toContain('Reset / Show All');
+    });
+
+    it('should include focus mode exit button', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="btn-exit-focus"');
+    });
+
+    it('should include metrics display', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="metrics"');
+    });
+
+    it('should include hideEdgesOnDrag for performance', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('hideEdgesOnDrag: true');
+    });
+
+    it('should include lifecycle filter checkboxes', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('data-filter="lifecycle"');
+      expect(html).toContain('value="production"');
+      expect(html).toContain('value="experimental"');
+      expect(html).toContain('value="deprecated"');
+      expect(html).toContain('value="orphan"');
+    });
+
+    it('should include hide orphans toggle', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="hide-orphans"');
+      expect(html).toContain('Hide Orphans');
     });
   });
 
@@ -120,53 +160,96 @@ describe('html-formatter', () => {
       const nodes = _buildVisNodes(MOCK_GRAPH_DATA.nodes);
 
       const agentNode = nodes.find((n) => n.id === 'dev');
-      expect(agentNode.color).toBe(CATEGORY_COLORS.agents.color);
+      expect(agentNode.color.background).toBe(CATEGORY_COLORS.agents.color);
       expect(agentNode.shape).toBe(CATEGORY_COLORS.agents.shape);
 
       const taskNode = nodes.find((n) => n.id === 'task-a');
-      expect(taskNode.color).toBe(CATEGORY_COLORS.tasks.color);
+      expect(taskNode.color.background).toBe(CATEGORY_COLORS.tasks.color);
 
       const tmplNode = nodes.find((n) => n.id === 'tmpl-story');
-      expect(tmplNode.color).toBe(CATEGORY_COLORS.templates.color);
+      expect(tmplNode.color.background).toBe(CATEGORY_COLORS.templates.color);
       expect(tmplNode.shape).toBe(CATEGORY_COLORS.templates.shape);
 
       const scriptNode = nodes.find((n) => n.id === 'script-1');
-      expect(scriptNode.color).toBe(CATEGORY_COLORS['scripts/task'].color);
+      expect(scriptNode.color.background).toBe(LIFECYCLE_STYLES.orphan.colorOverride);
     });
 
-    it('should include tooltip with path, type, and dependencies count', () => {
+    it('should include tooltip with category, lifecycle, and path', () => {
       const nodes = _buildVisNodes(MOCK_GRAPH_DATA.nodes);
       const devNode = nodes.find((n) => n.id === 'dev');
-      expect(devNode.title).toContain('Type: agents');
+      expect(devNode.title).toContain('Category: agents');
+      expect(devNode.title).toContain('Lifecycle: production');
       expect(devNode.title).toContain('Path: .aios-core/agents/dev.md');
-      expect(devNode.title).toContain('Dependencies: 1');
     });
 
     it('should use default color for unknown category', () => {
       const nodes = _buildVisNodes([{ id: 'x', label: 'x', group: 'unknown' }]);
-      expect(nodes[0].color).toBe('#b0bec5');
+      expect(nodes[0].color.background).toBe('#b0bec5');
     });
 
     it('should handle null/undefined nodes', () => {
       expect(_buildVisNodes(null)).toEqual([]);
       expect(_buildVisNodes(undefined)).toEqual([]);
     });
-  });
 
-  describe('_buildVisEdges', () => {
-    it('should map edges with arrows', () => {
-      const edges = _buildVisEdges(MOCK_GRAPH_DATA.edges);
-      expect(edges).toHaveLength(2);
-      expect(edges[0]).toEqual({ from: 'dev', to: 'task-a', arrows: 'to' });
+    it('should include group and lifecycle properties on nodes', () => {
+      const nodes = _buildVisNodes(MOCK_GRAPH_DATA.nodes);
+      const devNode = nodes.find((n) => n.id === 'dev');
+      expect(devNode.group).toBe('agents');
+      expect(devNode.lifecycle).toBe('production');
     });
 
-    it('should handle null/undefined edges', () => {
-      expect(_buildVisEdges(null)).toEqual([]);
-      expect(_buildVisEdges(undefined)).toEqual([]);
+    it('should default lifecycle to production when missing', () => {
+      const nodes = _buildVisNodes([{ id: 'x', label: 'x', group: 'tasks' }]);
+      expect(nodes[0].lifecycle).toBe('production');
+    });
+
+    it('should apply lifecycle visual styles', () => {
+      const nodes = _buildVisNodes(MOCK_GRAPH_DATA.nodes);
+
+      const productionNode = nodes.find((n) => n.id === 'dev');
+      expect(productionNode.opacity).toBe(1.0);
+
+      const experimentalNode = nodes.find((n) => n.id === 'tmpl-story');
+      expect(experimentalNode.opacity).toBe(0.8);
+
+      const orphanNode = nodes.find((n) => n.id === 'script-1');
+      expect(orphanNode.opacity).toBe(0.3);
+      expect(orphanNode.color.background).toBe('#ccc');
+    });
+
+    it('should apply deprecated lifecycle styling', () => {
+      const nodes = _buildVisNodes([{
+        id: 'old', label: 'old', group: 'tasks', lifecycle: 'deprecated',
+      }]);
+      expect(nodes[0].opacity).toBe(0.5);
+      expect(nodes[0].color.background).toBe('#999');
+    });
+
+    it('should set borderDashes for experimental lifecycle', () => {
+      const nodes = _buildVisNodes([{
+        id: 'exp', label: 'exp', group: 'tasks', lifecycle: 'experimental',
+      }]);
+      expect(nodes[0].shapeProperties.borderDashes).toEqual([5, 5]);
+    });
+
+    it('should set borderDashes for orphan lifecycle', () => {
+      const nodes = _buildVisNodes([{
+        id: 'orph', label: 'orph', group: 'tasks', lifecycle: 'orphan',
+      }]);
+      expect(nodes[0].shapeProperties.borderDashes).toEqual([2, 4]);
+    });
+
+    it('should deduplicate nodes by id', () => {
+      const nodes = _buildVisNodes([
+        { id: 'dup', label: 'dup', group: 'tasks' },
+        { id: 'dup', label: 'dup-2', group: 'agents' },
+      ]);
+      expect(nodes).toHaveLength(1);
     });
   });
 
-  describe('_buildVisNodes - new categories', () => {
+  describe('_buildVisNodes - all 11 categories', () => {
     it('should apply correct styles for all 11 categories', () => {
       const allCatNodes = [
         { id: 'a1', label: 'a1', group: 'agents' },
@@ -187,45 +270,124 @@ describe('html-formatter', () => {
       for (const node of nodes) {
         const cat = allCatNodes.find((n) => n.id === node.id).group;
         const expected = CATEGORY_COLORS[cat];
-        expect(node.color).toBe(expected.color);
+        expect(node.color.background).toBe(expected.color);
         expect(node.shape).toBe(expected.shape);
       }
     });
 
     it('should map legacy "scripts" group to scripts/task fallback', () => {
       const nodes = _buildVisNodes([{ id: 's', label: 's', group: 'scripts' }]);
-      expect(nodes[0].color).toBe(CATEGORY_COLORS['scripts/task'].color);
+      expect(nodes[0].color.background).toBe(CATEGORY_COLORS['scripts/task'].color);
       expect(nodes[0].shape).toBe(CATEGORY_COLORS['scripts/task'].shape);
     });
   });
 
-  describe('_buildLegend', () => {
-    it('should contain all 11 category names', () => {
+  describe('_buildVisEdges', () => {
+    it('should map edges with arrows', () => {
+      const edges = _buildVisEdges(MOCK_GRAPH_DATA.edges);
+      expect(edges).toHaveLength(2);
+      expect(edges[0]).toEqual({ from: 'dev', to: 'task-a', arrows: 'to' });
+    });
+
+    it('should handle null/undefined edges', () => {
+      expect(_buildVisEdges(null)).toEqual([]);
+      expect(_buildVisEdges(undefined)).toEqual([]);
+    });
+  });
+
+  describe('_buildLegend (backward compat)', () => {
+    it('should return empty string (legend is now in sidebar)', () => {
       const legend = _buildLegend();
+      expect(legend).toBe('');
+    });
+  });
+
+  describe('_buildSidebar', () => {
+    it('should contain all 11 category names', () => {
+      const sidebar = _buildSidebar();
       const allCategories = [
         'agents', 'tasks', 'templates', 'checklists', 'workflows',
         'scripts/task', 'scripts/engine', 'scripts/infra',
         'utils', 'data', 'tools',
       ];
       for (const cat of allCategories) {
-        expect(legend).toContain(cat);
+        expect(sidebar).toContain(cat);
       }
     });
 
     it('should contain all category colors', () => {
-      const legend = _buildLegend();
+      const sidebar = _buildSidebar();
       for (const [, style] of Object.entries(CATEGORY_COLORS)) {
-        expect(legend).toContain(style.color);
+        expect(sidebar).toContain(style.color);
       }
     });
 
-    it('should contain shape icons for each shape type', () => {
-      const legend = _buildLegend();
-      expect(legend).toContain('&#9679;');
-      expect(legend).toContain('&#9632;');
-      expect(legend).toContain('&#9670;');
-      expect(legend).toContain('&#9650;');
-      expect(legend).toContain('&#9733;');
+    it('should contain shape icons', () => {
+      const sidebar = _buildSidebar();
+      expect(sidebar).toContain('&#9679;');
+      expect(sidebar).toContain('&#9632;');
+      expect(sidebar).toContain('&#9670;');
+      expect(sidebar).toContain('&#9650;');
+      expect(sidebar).toContain('&#9733;');
+    });
+
+    it('should contain lifecycle filter checkboxes', () => {
+      const sidebar = _buildSidebar();
+      expect(sidebar).toContain('data-filter="lifecycle"');
+      expect(sidebar).toContain('production');
+      expect(sidebar).toContain('experimental');
+      expect(sidebar).toContain('deprecated');
+      expect(sidebar).toContain('orphan');
+    });
+
+    it('should contain search input', () => {
+      const sidebar = _buildSidebar();
+      expect(sidebar).toContain('id="search-input"');
+    });
+
+    it('should contain hide orphans toggle', () => {
+      const sidebar = _buildSidebar();
+      expect(sidebar).toContain('id="hide-orphans"');
+    });
+
+    it('should contain reset button', () => {
+      const sidebar = _buildSidebar();
+      expect(sidebar).toContain('id="btn-reset"');
+    });
+
+    it('should contain exit focus button', () => {
+      const sidebar = _buildSidebar();
+      expect(sidebar).toContain('id="btn-exit-focus"');
+    });
+  });
+
+  describe('LIFECYCLE_STYLES', () => {
+    it('should define all 4 lifecycle states', () => {
+      expect(LIFECYCLE_STYLES.production).toBeDefined();
+      expect(LIFECYCLE_STYLES.experimental).toBeDefined();
+      expect(LIFECYCLE_STYLES.deprecated).toBeDefined();
+      expect(LIFECYCLE_STYLES.orphan).toBeDefined();
+    });
+
+    it('should have correct opacity values', () => {
+      expect(LIFECYCLE_STYLES.production.opacity).toBe(1.0);
+      expect(LIFECYCLE_STYLES.experimental.opacity).toBe(0.8);
+      expect(LIFECYCLE_STYLES.deprecated.opacity).toBe(0.5);
+      expect(LIFECYCLE_STYLES.orphan.opacity).toBe(0.3);
+    });
+
+    it('should have correct color overrides', () => {
+      expect(LIFECYCLE_STYLES.production.colorOverride).toBeNull();
+      expect(LIFECYCLE_STYLES.experimental.colorOverride).toBeNull();
+      expect(LIFECYCLE_STYLES.deprecated.colorOverride).toBe('#999');
+      expect(LIFECYCLE_STYLES.orphan.colorOverride).toBe('#ccc');
+    });
+
+    it('should have correct borderDashes', () => {
+      expect(LIFECYCLE_STYLES.production.borderDashes).toBe(false);
+      expect(LIFECYCLE_STYLES.experimental.borderDashes).toEqual([5, 5]);
+      expect(LIFECYCLE_STYLES.deprecated.borderDashes).toBe(false);
+      expect(LIFECYCLE_STYLES.orphan.borderDashes).toEqual([2, 4]);
     });
   });
 

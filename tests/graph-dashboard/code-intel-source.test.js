@@ -277,6 +277,47 @@ describe('CodeIntelSource', () => {
     });
   });
 
+  describe('getData - lifecycle field in registry nodes', () => {
+    it('should include lifecycle from registry entity data', async () => {
+      mockRegistryData = {
+        metadata: { entityCount: 3 },
+        entities: {
+          agents: {
+            'dev-agent': { path: '.aios-core/agents/dev.md', type: 'agent', lifecycle: 'production', dependencies: [], usedBy: [] },
+            'old-agent': { path: '.aios-core/agents/old.md', type: 'agent', lifecycle: 'deprecated', dependencies: [], usedBy: [] },
+          },
+          tasks: {
+            'orphan-task': { path: '.aios-core/tasks/orphan.md', type: 'task', lifecycle: 'orphan', dependencies: [], usedBy: [] },
+          },
+        },
+      };
+
+      const result = await source.getData();
+      const devNode = result.nodes.find((n) => n.id === 'dev-agent');
+      const oldNode = result.nodes.find((n) => n.id === 'old-agent');
+      const orphanNode = result.nodes.find((n) => n.id === 'orphan-task');
+
+      expect(devNode.lifecycle).toBe('production');
+      expect(oldNode.lifecycle).toBe('deprecated');
+      expect(orphanNode.lifecycle).toBe('orphan');
+    });
+
+    it('should default lifecycle to production when missing', async () => {
+      mockRegistryData = {
+        metadata: { entityCount: 1 },
+        entities: {
+          agents: {
+            'no-lifecycle': { path: '.aios-core/agents/test.md', type: 'agent', dependencies: [], usedBy: [] },
+          },
+        },
+      };
+
+      const result = await source.getData();
+      const node = result.nodes.find((n) => n.id === 'no-lifecycle');
+      expect(node.lifecycle).toBe('production');
+    });
+  });
+
   describe('caching', () => {
     it('should return cached data when not stale', async () => {
       const cachedSource = new CodeIntelSource({ cacheTTL: 60000 });

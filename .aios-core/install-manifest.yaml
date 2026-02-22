@@ -8,7 +8,7 @@
 # - File types for categorization
 #
 version: 4.2.13
-generated_at: "2026-02-22T00:56:32.130Z"
+generated_at: "2026-02-22T01:14:09.801Z"
 generator: scripts/generate-install-manifest.js
 file_count: 1033
 files:
@@ -353,9 +353,9 @@ files:
     type: core
     size: 10251
   - path: core/graph-dashboard/data-sources/code-intel-source.js
-    hash: sha256:656ef6ef688f18bca3941caa9690e0c7c4ee235e05365a5748748b1776ecccc1
+    hash: sha256:e508d6cbadcd2358fa7756dcaceefbaa510bd89155e036e2cbd386585408ff8f
     type: core
-    size: 6696
+    size: 6799
   - path: core/graph-dashboard/data-sources/metrics-source.js
     hash: sha256:b1e4027f82350760b67ea8f58e04a5e739f87f010838487043e29dab7301ae9e
     type: core
@@ -369,9 +369,9 @@ files:
     type: core
     size: 1162
   - path: core/graph-dashboard/formatters/html-formatter.js
-    hash: sha256:8e290499f771dff284b9c307e477d2e06467dc71e6638fd7e1c552cccd03ed8b
+    hash: sha256:e13e19d566196d8ff53a8b77615973d3003bbeb354c9651c1fbd3683b09d58cc
     type: core
-    size: 7129
+    size: 16944
   - path: core/graph-dashboard/formatters/json-formatter.js
     hash: sha256:0544ec384f716130a5141edc7ad6733dccd82b86e37fc1606f1120b0037c3f8d
     type: core
@@ -1117,7 +1117,7 @@ files:
     type: data
     size: 34235
   - path: data/entity-registry.yaml
-    hash: sha256:d48ebdf094f284f6a3e005898029076f5b1918c556a3b67d985c24885beb8add
+    hash: sha256:a40928b4a1c96e5fbf7bbac2acf6b7dab530543a9aaeaa40ef23609734ea909a
     type: data
     size: 488884
   - path: data/learned-patterns.yaml
