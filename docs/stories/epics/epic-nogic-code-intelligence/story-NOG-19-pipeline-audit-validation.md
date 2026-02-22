@@ -4,7 +4,7 @@
 **Wave:** 8B — Native-First Follow-up
 **Points:** 3
 **Agents:** @dev + @qa
-**Status:** Ready for Review
+**Status:** Done
 **Blocked By:** NOG-18 (SYNAPSE Native-First Migration)
 **Created:** 2026-02-22
 
@@ -241,3 +241,5 @@ Ready for Done
 | 2026-02-22 | @po (Pax) | PO validation 9/10 GO — added Risks section, status Draft → Ready |
 | 2026-02-22 | @po (Pax) | Formal *validate-story-draft: 8/10 GO — added Focus Areas to CodeRabbit section |
 | 2026-02-22 | @dev (Dex) | Tasks 1-4 completed. Baseline + post-change snapshots captured, comparison report generated, core-config reviewed. AC2 deviations documented. Status InProgress → Ready for Review |
+| 2026-02-22 | @qa (Quinn) | QA Review: PASS. 12/12 ACs verified, 2 documented deviations accepted, zero regressions. NFR 4/4 PASS. |
+| 2026-02-22 | @po (Pax) | Story closed. Commit ac4b97db pushed to feat/epic-nogic-code-intelligence. Status Ready for Review → Done |

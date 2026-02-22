@@ -4,7 +4,7 @@
 **Wave:** 8B — Native-First Follow-up
 **Points:** 3
 **Agents:** @dev
-**Status:** Ready for Review
+**Status:** Done
 **Blocked By:** NOG-18 (SYNAPSE Native-First Migration)
 **Created:** 2026-02-22
 
@@ -354,3 +354,6 @@ All acceptance criteria met. Story approved for commit and push via @devops.
 | 2026-02-22 | @po (Pax) | PO validation 10/10 GO — status Draft → Ready |
 | 2026-02-23 | @po (Pax) | Re-validation 8/10 GO — applied 2 should-fix: (1) AC5 rewritten to remove incorrect SYNAPSE_LEGACY_MODE reference, replaced with UAP fallback verification; (2) Task 2.0 added to capture baseline before modifications; (3) Task 4.2/4.4 aligned with corrected AC5. Score: 8/10 → 9/10. |
 | 2026-02-23 | @dev (Dex) | Implementation: all 12 agent command files migrated to native greeting. Session crash recovery — resumed from unstaged changes. All tasks complete, side-by-side comparison documented, UAP fallback verified. Status: Ready for Review. |
+| 2026-02-23 | @qa (Quinn) | QA gate: CONCERNS (pm.md STEP 4 stale ref) → @dev fix → Re-review PASS 10/10. |
+| 2026-02-23 | @devops (Gage) | Commit `3d7a8e29` + push to `feat/epic-nogic-code-intelligence`. |
+| 2026-02-23 | @po (Pax) | Story closed. All tasks done, QA PASS, committed + pushed. Status: Done. Next: NOG-22 (Agent Skill Discovery). |

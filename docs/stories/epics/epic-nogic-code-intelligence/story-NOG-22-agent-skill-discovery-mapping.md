@@ -4,7 +4,7 @@
 **Wave:** 8B — Native-First Follow-up
 **Points:** 5
 **Agents:** @analyst + @dev
-**Status:** Ready for Review
+**Status:** Done
 **Blocked By:** NOG-20 (Agent Frontmatter & Validation)
 **Created:** 2026-02-22
 
@@ -265,3 +265,5 @@ Gate: **PASS** (Quality Score: 90/100)
 | 2026-02-23 | @po (Pax) | PO validation 8/10 GO — applied 2 should-fix: (1) Wave label aligned with INDEX (Backlog → 8B); (2) NOG-20 blocker marked resolved in INDEX. Status: Draft → Ready. |
 | 2026-02-23 | @analyst (Atlas) | Tasks 1-4 complete — research output in docs/research/2026-02-23-claude-code-skills-ecosystem/. 185 tasks cataloged, 4 internal skills proposed, 5 external sources evaluated, P0-P5 plan created. Handoff to @dev for Task 5. |
 | 2026-02-23 | @dev (Dex) | Task 5 complete — created coderabbit-review + checklist-runner skills, added to @dev/@qa/@devops frontmatter. All ACs met. Status: Ready for Review. |
+| 2026-02-23 | @qa (Quinn) | QA review PASS (100/100). Expanded checklist-runner to all 8 agents. Pushed commit 62590581. |
+| 2026-02-23 | @po (Pax) | Story closed. All ACs met, QA PASS, pushed to remote. Status: Ready for Review → Done. |

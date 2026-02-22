@@ -3,7 +3,7 @@
 ## Metadata
 - **Story ID:** NOG-8
 - **Epic:** Code Intelligence Integration (Provider-Agnostic)
-- **Status:** Ready for Review
+- **Status:** Done
 - **Priority:** P3 - Low
 - **Points:** 3
 - **Agent:** @dev (Dex)
@@ -446,3 +446,4 @@ Claude Opus 4.6
 | 2026-02-21 | @sm (River) | v3.0 — Full expansion: Executor Assignment, Story format, Scope (IN/OUT), Risks, DoD, Dev Notes (Source Tree, NOG-1 context, Helper Pattern, Template Pattern, Testing), CodeRabbit Integration, Tasks expanded with subtasks and AC mapping, Dev Agent Record/QA Results placeholders |
 | 2026-02-21 | @po (Pax) | v4.0 — PO Validation: GO (10/10). Auto-fix: quality_gate @qa → @architect (consistency with NOG-3), Task 5.1 integration point specified (squad-creator → entity-registry.yaml). Status: Draft → Ready |
 | 2026-02-21 | @dev (Dex) | v5.0 — Implementation complete. All 6 tasks/20 subtasks done. creation-helper.js (3 functions), code-intel-integration-pattern.md, agent/task template modifications, registry-updater.js enrichment integration, 29 tests passing. 0 regressions (6421/6421 full suite). Status: InProgress → Ready for Review |
+| 2026-02-23 | @po (Pax) | Story closed. All 5 ACs met, QA PASS, 29/29 tests, 0 regressions. Status: Ready for Review → Done. |

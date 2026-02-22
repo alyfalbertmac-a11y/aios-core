@@ -7,7 +7,7 @@
 | **Story ID** | NOG-17 |
 | **Epic** | NOGIC — Code Intelligence Integration |
 | **Type** | Technical Audit + E2E Test Suite |
-| **Status** | Ready for Review |
+| **Status** | Done |
 | **Priority** | P1 |
 | **Points** | 5 |
 | **Agent** | @dev (Dex) — primary + @qa (Quinn) — validation |
@@ -413,3 +413,4 @@ The audit delivers comprehensive, evidence-based findings across all 7 ACs. All 
 | 2026-02-22 | @qa (Quinn) | Initial review: 3 concerns identified (AC4 per-bracket, layer skip reasons, bracket verdict logic). |
 | 2026-02-22 | @qa (Quinn) + @dev (Dex) | All 3 concerns fixed in-session: calibrated prompt_counts for real brackets, added bracket-filter vs no-content distinction, fixed classification logic. Re-ran full audit. |
 | 2026-02-22 | @qa (Quinn) | Task 5 complete. Verdict: PASS. All 7 ACs validated. All 13 classifications confirmed. 3 known limitations documented. |
+| 2026-02-23 | @po (Pax) | PO validation GO (97/100). 2 should-fix non-blocking (status label, risks section). Story closed. Status: Ready for Review → Done. |
