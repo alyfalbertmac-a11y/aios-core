@@ -40,13 +40,13 @@ Estabelecer separação determinística entre artefatos do **framework AIOS** (i
 
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
-| [BM-3](story-BM-3-pre-commit-framework-guard.md) | Pre-Commit Hook Framework Guard | @devops | 3 | Ready for Review | BM-1 (Done) |
+| [BM-3](story-BM-3-pre-commit-framework-guard.md) | Pre-Commit Hook Framework Guard | @devops | 3 | Done | BM-1 (Done) |
 
 ### Wave 3: Config Surface (Sequential after Wave 2)
 
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
-| [BM-4](story-BM-4-config-override-surface.md) | Configuration Override Surface Design | @architect + @dev | 5 | Draft | BM-1 |
+| [BM-4](story-BM-4-config-override-surface.md) | Boundary Schema Enrichment & Template Customization | @dev | 5 | Draft | BM-1 (Done) |
 
 ### Wave 4: Entity Registry Evolution (after Wave 3)
 
@@ -86,7 +86,7 @@ Estabelecer separação determinística entre artefatos do **framework AIOS** (i
 |-------|-----------|---------|
 | **Atoms** | Deny rules, file headers, config keys | BM-1 (deny rules), BM-2 (CLAUDE.md section) |
 | **Molecules** | Pre-commit hook combining atoms | BM-3 (guard script + config toggle) |
-| **Organisms** | Config override surface | BM-4 (merge logic + schema + layering) |
+| **Organisms** | Config override surface | BM-4 (schema enrichment + template overrides) |
 | **Templates** | Entity classification system | BM-5 (L1-L4 in registry) |
 | **Pages** | Full lifecycle integration | BM-6 (memory evolution + config sync) |
 
