@@ -7,7 +7,9 @@ const {
   _buildVisEdges,
   _buildLegend,
   _buildSidebar,
+  THEME,
   CATEGORY_COLORS,
+  DEFAULT_COLOR,
   LIFECYCLE_STYLES,
 } = require('../../.aios-core/core/graph-dashboard/formatters/html-formatter');
 
@@ -46,9 +48,9 @@ describe('html-formatter', () => {
       expect(html).toContain('<meta charset="utf-8">');
     });
 
-    it('should use dark theme background', () => {
+    it('should use dashboard token background', () => {
       const html = formatAsHtml(MOCK_GRAPH_DATA);
-      expect(html).toContain('#1e1e1e');
+      expect(html).toContain(THEME.bg.base);
     });
 
     it('should include physics stabilization config', () => {
@@ -174,17 +176,21 @@ describe('html-formatter', () => {
       expect(scriptNode.color.background).toBe(LIFECYCLE_STYLES.orphan.colorOverride);
     });
 
-    it('should include tooltip with category, lifecycle, and path', () => {
+    it('should NOT include title property (native tooltip disabled)', () => {
       const nodes = _buildVisNodes(MOCK_GRAPH_DATA.nodes);
       const devNode = nodes.find((n) => n.id === 'dev');
-      expect(devNode.title).toContain('Category: agents');
-      expect(devNode.title).toContain('Lifecycle: production');
-      expect(devNode.title).toContain('Path: .aios-core/agents/dev.md');
+      expect(devNode.title).toBeUndefined();
+    });
+
+    it('should include path property on nodes', () => {
+      const nodes = _buildVisNodes(MOCK_GRAPH_DATA.nodes);
+      const devNode = nodes.find((n) => n.id === 'dev');
+      expect(devNode.path).toBe('.aios-core/agents/dev.md');
     });
 
     it('should use default color for unknown category', () => {
       const nodes = _buildVisNodes([{ id: 'x', label: 'x', group: 'unknown' }]);
-      expect(nodes[0].color.background).toBe('#b0bec5');
+      expect(nodes[0].color.background).toBe(THEME.text.tertiary);
     });
 
     it('should handle null/undefined nodes', () => {
@@ -215,7 +221,7 @@ describe('html-formatter', () => {
 
       const orphanNode = nodes.find((n) => n.id === 'script-1');
       expect(orphanNode.opacity).toBe(0.3);
-      expect(orphanNode.color.background).toBe('#ccc');
+      expect(orphanNode.color.background).toBe(THEME.text.muted);
     });
 
     it('should apply deprecated lifecycle styling', () => {
@@ -223,7 +229,7 @@ describe('html-formatter', () => {
         id: 'old', label: 'old', group: 'tasks', lifecycle: 'deprecated',
       }]);
       expect(nodes[0].opacity).toBe(0.5);
-      expect(nodes[0].color.background).toBe('#999');
+      expect(nodes[0].color.background).toBe(THEME.text.tertiary);
     });
 
     it('should set borderDashes for experimental lifecycle', () => {
@@ -322,13 +328,10 @@ describe('html-formatter', () => {
       }
     });
 
-    it('should contain shape icons', () => {
+    it('should contain status-dot spans instead of shape icons', () => {
       const sidebar = _buildSidebar();
-      expect(sidebar).toContain('&#9679;');
-      expect(sidebar).toContain('&#9632;');
-      expect(sidebar).toContain('&#9670;');
-      expect(sidebar).toContain('&#9650;');
-      expect(sidebar).toContain('&#9733;');
+      expect(sidebar).toContain('class="status-dot"');
+      expect(sidebar).not.toContain('&#9632;');
     });
 
     it('should contain lifecycle filter checkboxes', () => {
@@ -376,11 +379,11 @@ describe('html-formatter', () => {
       expect(LIFECYCLE_STYLES.orphan.opacity).toBe(0.3);
     });
 
-    it('should have correct color overrides', () => {
+    it('should have correct color overrides using THEME tokens', () => {
       expect(LIFECYCLE_STYLES.production.colorOverride).toBeNull();
       expect(LIFECYCLE_STYLES.experimental.colorOverride).toBeNull();
-      expect(LIFECYCLE_STYLES.deprecated.colorOverride).toBe('#999');
-      expect(LIFECYCLE_STYLES.orphan.colorOverride).toBe('#ccc');
+      expect(LIFECYCLE_STYLES.deprecated.colorOverride).toBe(THEME.text.tertiary);
+      expect(LIFECYCLE_STYLES.orphan.colorOverride).toBe(THEME.text.muted);
     });
 
     it('should have correct borderDashes', () => {
@@ -388,6 +391,204 @@ describe('html-formatter', () => {
       expect(LIFECYCLE_STYLES.experimental.borderDashes).toEqual([5, 5]);
       expect(LIFECYCLE_STYLES.deprecated.borderDashes).toBe(false);
       expect(LIFECYCLE_STYLES.orphan.borderDashes).toEqual([2, 4]);
+    });
+  });
+
+  describe('THEME token governance', () => {
+    it('should export THEME constant with all token categories', () => {
+      expect(THEME.bg).toBeDefined();
+      expect(THEME.text).toBeDefined();
+      expect(THEME.status).toBeDefined();
+      expect(THEME.border).toBeDefined();
+      expect(THEME.accent).toBeDefined();
+      expect(THEME.agent).toBeDefined();
+      expect(THEME.radius).toBeDefined();
+    });
+
+    it('should source CATEGORY_COLORS from THEME tokens', () => {
+      const themeValues = new Set();
+      const collectValues = (obj) => {
+        for (const val of Object.values(obj)) {
+          if (typeof val === 'string') themeValues.add(val);
+          else if (typeof val === 'object' && val !== null) collectValues(val);
+        }
+      };
+      collectValues(THEME);
+
+      for (const [, style] of Object.entries(CATEGORY_COLORS)) {
+        expect(themeValues.has(style.color)).toBe(true);
+      }
+    });
+
+    it('should source DEFAULT_COLOR from THEME tokens', () => {
+      expect(DEFAULT_COLOR.color).toBe(THEME.text.tertiary);
+    });
+
+    it('should source LIFECYCLE_STYLES colorOverrides from THEME tokens', () => {
+      for (const [, style] of Object.entries(LIFECYCLE_STYLES)) {
+        if (style.colorOverride !== null) {
+          expect(
+            style.colorOverride === THEME.text.tertiary ||
+            style.colorOverride === THEME.text.muted
+          ).toBe(true);
+        }
+      }
+    });
+
+    it('should use goldStrong for node highlight border', () => {
+      const nodes = _buildVisNodes([{ id: 'n', label: 'n', group: 'agents' }]);
+      expect(nodes[0].color.highlight.border).toBe(THEME.border.goldStrong);
+    });
+
+    it('should use gold for node hover border', () => {
+      const nodes = _buildVisNodes([{ id: 'n', label: 'n', group: 'agents' }]);
+      expect(nodes[0].color.hover.border).toBe(THEME.border.gold);
+    });
+
+    it('should use border.subtle for default node border', () => {
+      const nodes = _buildVisNodes([{ id: 'n', label: 'n', group: 'agents' }]);
+      expect(nodes[0].color.border).toBe(THEME.border.subtle);
+    });
+  });
+
+  describe('GD-10: Tooltip & Interaction', () => {
+    it('should include tooltip container with role="tooltip"', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="node-tooltip"');
+      expect(html).toContain('role="tooltip"');
+    });
+
+    it('should include tooltip CSS with card-refined values', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain(THEME.tooltip.bg);
+      expect(html).toContain(THEME.tooltip.shadow);
+      expect(html).toContain(THEME.tooltip.border);
+    });
+
+    it('should include Escape key handler for tooltip dismiss', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain("e.key === 'Escape'");
+      expect(html).toContain('hideTooltip');
+    });
+
+    it('should include click handler for tooltip display', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('showTooltip');
+      expect(html).toContain('canvasToDOM');
+    });
+
+    it('should include status-dot CSS', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('.status-dot');
+      expect(html).toContain('border-radius: 50%');
+      expect(html).toContain('box-shadow: 0 0 8px currentColor');
+    });
+
+    it('should include ENTITY TYPES header in sidebar', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('ENTITY TYPES');
+    });
+
+    it('should include gold-line separator', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('class="gold-line"');
+    });
+
+    it('should include node count per category in sidebar', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      // MOCK_GRAPH_DATA has 1 agent, 1 task, 1 template, 1 script
+      expect(html).toContain('margin-left:auto');
+    });
+
+    it('should have new THEME tokens for border interaction', () => {
+      expect(THEME.border.subtle).toBe('rgba(255,255,255,0.04)');
+      expect(THEME.border.gold).toBe('rgba(201,178,152,0.25)');
+      expect(THEME.border.goldStrong).toBe('rgba(201,178,152,0.5)');
+    });
+
+    it('should have new THEME tokens for tooltip', () => {
+      expect(THEME.tooltip).toBeDefined();
+      expect(THEME.tooltip.bg).toBe(THEME.bg.surface);
+      expect(THEME.tooltip.border).toBe(THEME.border.subtle);
+      expect(THEME.tooltip.shadow).toBe('0 4px 12px rgba(0,0,0,0.5)');
+    });
+
+    it('should not have title property on nodes (native tooltip disabled)', () => {
+      const nodes = _buildVisNodes(MOCK_GRAPH_DATA.nodes);
+      for (const node of nodes) {
+        expect(node.title).toBeUndefined();
+      }
+    });
+  });
+
+  describe('GD-11: Physics Control Panel', () => {
+    it('should include PHYSICS section header in sidebar', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('PHYSICS');
+      expect(html).toContain('physics-toggle');
+    });
+
+    it('should include 4 range inputs with correct attributes', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      // Center Force
+      expect(html).toContain('id="slider-center"');
+      expect(html).toContain('min="0" max="1" step="0.05" value="0.3"');
+      // Repel Force
+      expect(html).toContain('id="slider-repel"');
+      expect(html).toContain('min="-30000" max="0" step="500" value="-2000"');
+      // Link Force
+      expect(html).toContain('id="slider-link"');
+      expect(html).toContain('min="0" max="1" step="0.01" value="0.04"');
+      // Link Distance
+      expect(html).toContain('id="slider-distance"');
+      expect(html).toContain('min="10" max="500" step="5" value="95"');
+    });
+
+    it('should include Reset button in physics section', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="btn-physics-reset"');
+      expect(html).toContain('>Reset<');
+    });
+
+    it('should include Pause/Resume toggle button', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('id="btn-physics-pause"');
+      expect(html).toContain('>Pause<');
+    });
+
+    it('should have THEME.controls tokens (sliderThumb, sliderTrack)', () => {
+      expect(THEME.controls).toBeDefined();
+      expect(THEME.controls.sliderThumb).toBe('#C9B298');
+      expect(THEME.controls.sliderTrack).toBe('rgba(255,255,255,0.1)');
+    });
+
+    it('should have ARIA labels on all sliders', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('aria-label="Center Force"');
+      expect(html).toContain('aria-label="Repel Force"');
+      expect(html).toContain('aria-label="Link Force"');
+      expect(html).toContain('aria-label="Link Distance"');
+    });
+
+    it('should include debounce function in JS output', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('_debounce');
+    });
+
+    it('should call network.setOptions in slider handler', () => {
+      const html = formatAsHtml(MOCK_GRAPH_DATA);
+      expect(html).toContain('network.setOptions');
+      expect(html).toContain('barnesHut');
+      expect(html).toContain('centralGravity');
+      expect(html).toContain('gravitationalConstant');
+      expect(html).toContain('springConstant');
+      expect(html).toContain('springLength');
+    });
+
+    it('should have physics section collapsed by default', () => {
+      const sidebar = _buildSidebar(MOCK_GRAPH_DATA.nodes);
+      expect(sidebar).toContain('physics-content');
+      expect(sidebar).toContain('display:none');
     });
   });
 

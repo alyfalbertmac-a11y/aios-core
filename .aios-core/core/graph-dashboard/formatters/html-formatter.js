@@ -1,26 +1,79 @@
 'use strict';
 
-const CATEGORY_COLORS = {
-  agents: { color: '#66bb6a', shape: 'dot' },
-  tasks: { color: '#4fc3f7', shape: 'box' },
-  templates: { color: '#ffd54f', shape: 'diamond' },
-  checklists: { color: '#E69F00', shape: 'triangle' },
-  workflows: { color: '#CC79A7', shape: 'star' },
-  'scripts/task': { color: '#009E73', shape: 'box' },
-  'scripts/engine': { color: '#D55E00', shape: 'box' },
-  'scripts/infra': { color: '#90a4ae', shape: 'box' },
-  utils: { color: '#56B4E9', shape: 'ellipse' },
-  data: { color: '#F0E442', shape: 'database' },
-  tools: { color: '#b39ddb', shape: 'hexagon' },
+// Design tokens aligned with dashboard globals.css (Design Tokens v2.0)
+// Source of truth: pro-design-migration/apps/dashboard/src/app/globals.css
+const THEME = {
+  bg: {
+    base: '#000000',       // --bg-base
+    surface: '#0A0A0A',    // --bg-surface
+    overlay: 'rgba(10,10,10,0.9)', // --bg-surface + opacity
+  },
+  text: {
+    primary: '#E8E8DF',    // --text-primary
+    secondary: '#B8B8AC',  // --text-secondary
+    tertiary: '#8A8A7F',   // --text-tertiary
+    muted: '#6B6B63',      // --text-muted
+  },
+  status: {
+    success: '#4ADE80',    // --status-success
+    warning: '#FBBF24',    // --status-warning
+    error: '#F87171',      // --status-error
+    info: '#60A5FA',       // --status-info
+  },
+  border: {
+    default: 'rgba(255,255,255,0.06)', // --border
+    subtle: 'rgba(255,255,255,0.04)',  // --border-subtle (card-refined)
+    highlight: 'rgba(201,178,152,0.25)', // --border-gold
+    gold: 'rgba(201,178,152,0.25)',    // --border-gold (alias for highlight)
+    goldStrong: 'rgba(201,178,152,0.5)', // --border-gold-strong (selection)
+  },
+  accent: {
+    gold: '#C9B298',       // --accent-gold
+  },
+  agent: {
+    dev: '#22c55e',        // --agent-dev
+    sm: '#f472b6',         // --agent-sm
+    po: '#f97316',         // --agent-po
+    qa: '#eab308',         // --agent-qa
+    architect: '#8b5cf6',  // --agent-architect
+    devops: '#ec4899',     // --agent-devops
+    analyst: '#06b6d4',    // --agent-analyst
+  },
+  tooltip: {
+    bg: '#0A0A0A',         // = bg.surface (card-refined)
+    border: 'rgba(255,255,255,0.04)', // = border.subtle
+    shadow: '0 4px 12px rgba(0,0,0,0.5)', // --tooltip-shadow
+  },
+  radius: {
+    md: '4px',             // --radius-md
+  },
+  controls: {
+    sliderThumb: '#C9B298',                // = accent.gold
+    sliderTrack: 'rgba(255,255,255,0.1)',  // slider track background
+  },
 };
 
-const DEFAULT_COLOR = { color: '#b0bec5', shape: 'box' };
+const CATEGORY_COLORS = {
+  agents: { color: THEME.agent.dev, shape: 'dot' },
+  tasks: { color: THEME.status.info, shape: 'box' },
+  templates: { color: THEME.status.warning, shape: 'diamond' },
+  checklists: { color: THEME.agent.po, shape: 'triangle' },
+  workflows: { color: THEME.agent.sm, shape: 'star' },
+  'scripts/task': { color: THEME.status.success, shape: 'box' },
+  'scripts/engine': { color: THEME.agent.devops, shape: 'box' },
+  'scripts/infra': { color: THEME.agent.analyst, shape: 'box' },
+  utils: { color: THEME.agent.analyst, shape: 'ellipse' },
+  data: { color: THEME.agent.qa, shape: 'database' },
+  tools: { color: THEME.agent.architect, shape: 'hexagon' },
+};
+
+const DEFAULT_COLOR = { color: THEME.text.tertiary, shape: 'box' };
 
 const LIFECYCLE_STYLES = {
   production: { opacity: 1.0, borderDashes: false, colorOverride: null },
   experimental: { opacity: 0.8, borderDashes: [5, 5], colorOverride: null },
-  deprecated: { opacity: 0.5, borderDashes: false, colorOverride: '#999' },
-  orphan: { opacity: 0.3, borderDashes: [2, 4], colorOverride: '#ccc' },
+  deprecated: { opacity: 0.5, borderDashes: false, colorOverride: THEME.text.tertiary },
+  orphan: { opacity: 0.3, borderDashes: [2, 4], colorOverride: THEME.text.muted },
 };
 
 /**
@@ -62,20 +115,16 @@ function _buildVisNodes(nodes) {
       label: _sanitize(node.label || node.id),
       group: category,
       lifecycle: lifecycle,
+      path: node.path || '',
       color: {
         background: nodeColor,
-        border: nodeColor,
-        highlight: { background: nodeColor, border: '#fff' },
+        border: THEME.border.subtle,
+        highlight: { background: nodeColor, border: THEME.border.goldStrong },
+        hover: { background: nodeColor, border: THEME.border.gold },
       },
       opacity: lcStyle.opacity,
       shapeProperties: { borderDashes: lcStyle.borderDashes },
       shape: style.shape,
-      title: [
-        `<b>${_sanitize(node.label || node.id)}</b>`,
-        `Category: ${_sanitize(category || 'unknown')}`,
-        `Lifecycle: ${_sanitize(lifecycle)}`,
-        node.path ? `Path: ${_sanitize(node.path)}` : null,
-      ].filter(Boolean).join('<br>'),
     });
     return acc;
   }, []);
@@ -98,23 +147,21 @@ function _buildVisEdges(edges) {
  * Build the sidebar HTML for filters.
  * @returns {string} Sidebar HTML
  */
-function _buildSidebar() {
-  const SHAPE_ICONS = {
-    dot: '&#9679;',
-    box: '&#9632;',
-    diamond: '&#9670;',
-    triangle: '&#9650;',
-    star: '&#9733;',
-    ellipse: '&#11044;',
-    database: '&#9707;',
-    hexagon: '&#11042;',
-  };
+function _buildSidebar(nodes) {
+  // Compute node counts per category
+  const categoryCounts = {};
+  (nodes || []).forEach((n) => {
+    const cat = (n.group || n.category || '').toLowerCase();
+    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+  });
 
   const categoryItems = Object.entries(CATEGORY_COLORS).map(([name, style]) => {
-    const icon = SHAPE_ICONS[style.shape] || '&#9632;';
+    const count = categoryCounts[name] || 0;
     return `<label class="filter-item">
       <input type="checkbox" data-filter="category" value="${name}" checked>
-      <span style="color:${style.color}">${icon}</span> ${name}
+      <span class="status-dot" style="color:${style.color}"></span>
+      <span style="color:${THEME.text.secondary};font-size:11px">${name}</span>
+      <span style="color:${THEME.text.tertiary};font-size:11px;margin-left:auto">${count}</span>
     </label>`;
   }).join('\n');
 
@@ -136,7 +183,8 @@ function _buildSidebar() {
         <input type="text" id="search-input" placeholder="Search entities..." autocomplete="off">
       </div>
       <div class="filter-section">
-        <div class="section-title">Categories</div>
+        <div class="section-title">ENTITY TYPES</div>
+        <div class="gold-line"></div>
         ${categoryItems}
       </div>
       <div class="filter-section">
@@ -145,6 +193,32 @@ function _buildSidebar() {
         <label class="filter-item hide-orphans">
           <input type="checkbox" id="hide-orphans"> Hide Orphans
         </label>
+      </div>
+      <div class="filter-section physics-section">
+        <div class="section-title physics-toggle" style="cursor:pointer">PHYSICS</div>
+        <div class="gold-line"></div>
+        <div class="physics-content" style="display:none">
+          <div class="slider-row">
+            <label class="slider-label">Center Force <span id="val-center" style="color:${THEME.text.tertiary}">0.3</span></label>
+            <input type="range" id="slider-center" min="0" max="1" step="0.05" value="0.3" aria-label="Center Force">
+          </div>
+          <div class="slider-row">
+            <label class="slider-label">Repel Force <span id="val-repel" style="color:${THEME.text.tertiary}">-2000</span></label>
+            <input type="range" id="slider-repel" min="-30000" max="0" step="500" value="-2000" aria-label="Repel Force">
+          </div>
+          <div class="slider-row">
+            <label class="slider-label">Link Force <span id="val-link" style="color:${THEME.text.tertiary}">0.04</span></label>
+            <input type="range" id="slider-link" min="0" max="1" step="0.01" value="0.04" aria-label="Link Force">
+          </div>
+          <div class="slider-row">
+            <label class="slider-label">Link Distance <span id="val-distance" style="color:${THEME.text.tertiary}">95</span></label>
+            <input type="range" id="slider-distance" min="10" max="500" step="5" value="95" aria-label="Link Distance">
+          </div>
+          <div class="physics-buttons">
+            <button id="btn-physics-reset" class="action-btn">Reset</button>
+            <button id="btn-physics-pause" class="action-btn">Pause</button>
+          </div>
+        </div>
       </div>
       <div class="filter-section actions">
         <button id="btn-reset" class="action-btn">Reset / Show All</button>
@@ -175,7 +249,7 @@ function _buildLegend() {
 function formatAsHtml(graphData, options = {}) {
   const visNodes = _buildVisNodes(graphData.nodes);
   const visEdges = _buildVisEdges(graphData.edges);
-  const sidebar = _buildSidebar();
+  const sidebar = _buildSidebar(graphData.nodes);
 
   const nodesJson = JSON.stringify(visNodes);
   const edgesJson = JSON.stringify(visEdges);
@@ -196,13 +270,13 @@ function formatAsHtml(graphData, options = {}) {
   <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; background: #1e1e1e; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; }
+    body { margin: 0; background: ${THEME.bg.base}; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace; }
     #graph { position: absolute; top: 0; left: 260px; right: 0; bottom: 0; }
-    #status { position: fixed; top: 10px; left: 270px; color: #4fc3f7; font-family: monospace; font-size: 13px; z-index: 100; background: rgba(30,30,30,0.9); padding: 6px 12px; border-radius: 4px; }
+    #status { position: fixed; top: 10px; left: 270px; color: ${THEME.accent.gold}; font-family: monospace; font-size: 13px; z-index: 100; background: ${THEME.bg.overlay}; padding: 6px 12px; border-radius: ${THEME.radius.md}; }
     #sidebar {
       position: fixed; top: 0; left: 0; width: 260px; height: 100vh;
-      background: #252526; border-right: 1px solid #3c3c3c;
-      overflow-y: auto; z-index: 200; color: #ccc; font-size: 12px;
+      background: ${THEME.bg.surface}; border-right: 1px solid ${THEME.border.default};
+      overflow-y: auto; z-index: 200; color: ${THEME.text.secondary}; font-size: 12px;
     }
     #sidebar.collapsed { width: 40px; }
     #sidebar.collapsed #sidebar-content { display: none; }
@@ -211,43 +285,81 @@ function formatAsHtml(graphData, options = {}) {
     #sidebar.collapsed ~ #status { left: 50px; }
     .sidebar-header {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 12px; border-bottom: 1px solid #3c3c3c;
+      padding: 10px 12px; border-bottom: 1px solid ${THEME.border.default};
     }
-    .sidebar-title { font-size: 14px; font-weight: 600; color: #e0e0e0; }
+    .sidebar-title { font-size: 14px; font-weight: 600; color: ${THEME.text.primary}; }
     #btn-toggle-sidebar {
-      background: none; border: none; color: #ccc; font-size: 16px;
+      background: none; border: none; color: ${THEME.text.secondary}; font-size: 16px;
       cursor: pointer; padding: 2px 6px;
     }
-    #btn-toggle-sidebar:hover { color: #fff; }
-    .filter-section { padding: 8px 12px; border-bottom: 1px solid #3c3c3c; }
-    .section-title { font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 6px; letter-spacing: 0.5px; }
+    #btn-toggle-sidebar:hover { color: ${THEME.text.primary}; }
+    .filter-section { padding: 8px 12px; border-bottom: 1px solid ${THEME.border.default}; }
+    .section-title { font-size: 10px; text-transform: uppercase; color: ${THEME.accent.gold}; margin-bottom: 6px; letter-spacing: 0.2em; }
     .filter-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; cursor: pointer; }
     .filter-item input[type="checkbox"] { margin: 0; cursor: pointer; }
-    .filter-item.hide-orphans { margin-top: 6px; padding-top: 6px; border-top: 1px solid #3c3c3c; }
+    .filter-item.hide-orphans { margin-top: 6px; padding-top: 6px; border-top: 1px solid ${THEME.border.default}; }
     #search-input {
-      width: 100%; padding: 6px 8px; background: #1e1e1e; border: 1px solid #3c3c3c;
-      color: #ccc; border-radius: 4px; font-size: 12px; outline: none;
+      width: 100%; padding: 6px 8px; background: ${THEME.bg.base}; border: 1px solid ${THEME.border.default};
+      color: ${THEME.text.secondary}; border-radius: ${THEME.radius.md}; font-size: 12px; outline: none;
     }
-    #search-input:focus { border-color: #4fc3f7; }
+    #search-input:focus { border-color: ${THEME.accent.gold}; }
     .action-btn {
-      width: 100%; padding: 6px; margin-top: 4px; background: #3c3c3c; border: none;
-      color: #ccc; border-radius: 4px; cursor: pointer; font-size: 12px;
+      width: 100%; padding: 6px; margin-top: 4px; background: ${THEME.border.default}; border: none;
+      color: ${THEME.text.secondary}; border-radius: ${THEME.radius.md}; cursor: pointer; font-size: 12px;
     }
-    .action-btn:hover { background: #4fc3f7; color: #1e1e1e; }
-    .metrics { color: #888; font-size: 11px; line-height: 1.6; }
-    .metrics b { color: #ccc; }
+    .action-btn:hover { background: ${THEME.accent.gold}; color: ${THEME.bg.base}; }
+    .metrics { color: ${THEME.text.tertiary}; font-size: 11px; line-height: 1.6; }
+    .metrics b { color: ${THEME.text.secondary}; }
+    .status-dot {
+      display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor; box-shadow: 0 0 8px currentColor; flex-shrink: 0;
+    }
+    .gold-line {
+      height: 1px; margin: 6px 0;
+      background: linear-gradient(90deg, ${THEME.accent.gold}, transparent);
+    }
+    .slider-row { margin-bottom: 8px; }
+    .slider-label { display: flex; justify-content: space-between; font-size: 11px; color: ${THEME.text.secondary}; margin-bottom: 2px; }
+    .physics-buttons { display: flex; gap: 6px; margin-top: 6px; }
+    .physics-buttons .action-btn { flex: 1; }
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px;
+      background: ${THEME.controls.sliderTrack}; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%;
+      background: ${THEME.controls.sliderThumb}; cursor: pointer;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 12px; height: 12px; border-radius: 50%; border: none;
+      background: ${THEME.controls.sliderThumb}; cursor: pointer;
+    }
+    input[type="range"]::-moz-range-track {
+      height: 4px; border-radius: 2px; background: ${THEME.controls.sliderTrack};
+    }
+    #node-tooltip {
+      display: none; position: fixed; z-index: 500;
+      background: ${THEME.tooltip.bg}; border: 1px solid ${THEME.tooltip.border};
+      border-radius: ${THEME.radius.md}; padding: 12px;
+      box-shadow: ${THEME.tooltip.shadow}; max-width: 320px; pointer-events: auto;
+    }
+    #node-tooltip .tt-name { color: ${THEME.text.primary}; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    #node-tooltip .tt-type { display: flex; align-items: center; gap: 6px; color: ${THEME.text.secondary}; font-size: 11px; margin-bottom: 4px; }
+    #node-tooltip .tt-path { color: ${THEME.text.tertiary}; font-size: 10px; font-family: monospace; margin-bottom: 4px; word-break: break-all; }
+    #node-tooltip .tt-deps { color: ${THEME.text.secondary}; font-size: 11px; }
   </style>
 </head>
 <body>
   <div id="status">Loading vis-network...</div>
   ${sidebar}
+  <div id="node-tooltip" role="tooltip"></div>
   <div id="graph"></div>
   <script>
     (function() {
       var statusEl = document.getElementById('status');
       if (typeof vis === 'undefined') {
         statusEl.textContent = 'ERROR: vis-network failed to load from CDN';
-        statusEl.style.color = '#f44336';
+        statusEl.style.color = '${THEME.status.error}';
         return;
       }
 
@@ -312,12 +424,12 @@ function formatAsHtml(graphData, options = {}) {
           }
         },
         nodes: {
-          font: { color: '#ccc', size: ${isLargeGraph ? 10 : 12} },
+          font: { color: '${THEME.text.secondary}', size: ${isLargeGraph ? 10 : 12} },
           borderWidth: 2,
           scaling: { min: 5, max: 20 }
         },
         edges: {
-          color: { color: '#555', highlight: '#aaa' },
+          color: { color: '${THEME.border.default}', highlight: '${THEME.border.highlight}' },
           smooth: ${isLargeGraph ? 'false' : '{ type: "cubicBezier" }'}
         },
         interaction: {
@@ -335,9 +447,66 @@ function formatAsHtml(graphData, options = {}) {
 
       network.on('stabilizationIterationsDone', function() {
         statusEl.textContent = 'Graph ready — ${nodeCount} nodes';
-        statusEl.style.color = '#66bb6a';
+        statusEl.style.color = '${THEME.status.success}';
         network.fit({ animation: { duration: 500 } });
         setTimeout(function() { statusEl.style.display = 'none'; }, 4000);
+      });
+
+      // --- Tooltip ---
+      var tooltipEl = document.getElementById('node-tooltip');
+
+      function showTooltip(nodeId, domPos) {
+        var nodeData = nodesDataset.get(nodeId);
+        if (!nodeData) return;
+
+        // Compute dependency count from edges
+        var depCount = 0;
+        allEdgesData.forEach(function(e) {
+          if (e.from === nodeId || e.to === nodeId) depCount++;
+        });
+
+        var catColor = nodeData.color && nodeData.color.background ? nodeData.color.background : '${THEME.text.tertiary}';
+
+        tooltipEl.innerHTML =
+          '<div class="tt-name">' + nodeData.label + '</div>' +
+          '<div class="tt-type"><span class="status-dot" style="color:' + catColor + '"></span> ' + (nodeData.group || 'unknown') + '</div>' +
+          (nodeData.path ? '<div class="tt-path">' + nodeData.path + '</div>' : '') +
+          '<div class="tt-deps">' + depCount + ' dependenc' + (depCount === 1 ? 'y' : 'ies') + '</div>';
+
+        // Position tooltip clamped to viewport
+        var x = domPos.x + 15;
+        var y = domPos.y + 15;
+        tooltipEl.style.display = 'block';
+        var rect = tooltipEl.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth) x = domPos.x - rect.width - 15;
+        if (y + rect.height > window.innerHeight) y = domPos.y - rect.height - 15;
+        if (x < 0) x = 10;
+        if (y < 0) y = 10;
+        tooltipEl.style.left = x + 'px';
+        tooltipEl.style.top = y + 'px';
+
+        // Accessibility: link node to tooltip
+        container.setAttribute('aria-describedby', 'node-tooltip');
+      }
+
+      function hideTooltip() {
+        tooltipEl.style.display = 'none';
+        container.removeAttribute('aria-describedby');
+      }
+
+      network.on('click', function(params) {
+        if (params.nodes.length === 1) {
+          var nodeId = params.nodes[0];
+          var canvasPos = network.getPosition(nodeId);
+          var domPos = network.canvasToDOM(canvasPos);
+          showTooltip(nodeId, domPos);
+        } else {
+          hideTooltip();
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') hideTooltip();
       });
 
       // --- Focus Mode ---
@@ -438,6 +607,85 @@ function formatAsHtml(graphData, options = {}) {
       // Exit focus button
       document.getElementById('btn-exit-focus').addEventListener('click', exitFocusMode);
 
+      // --- Physics Controls ---
+      function _debounce(fn, ms) {
+        var timer;
+        return function() {
+          var args = arguments;
+          clearTimeout(timer);
+          timer = setTimeout(function() { fn.apply(null, args); }, ms);
+        };
+      }
+
+      var physicsDefaults = { center: 0.3, repel: -2000, link: 0.04, distance: 95 };
+      var physicsPaused = false;
+
+      var sliderCenter = document.getElementById('slider-center');
+      var sliderRepel = document.getElementById('slider-repel');
+      var sliderLink = document.getElementById('slider-link');
+      var sliderDistance = document.getElementById('slider-distance');
+      var valCenter = document.getElementById('val-center');
+      var valRepel = document.getElementById('val-repel');
+      var valLink = document.getElementById('val-link');
+      var valDistance = document.getElementById('val-distance');
+
+      function applyPhysics() {
+        network.setOptions({
+          physics: {
+            barnesHut: {
+              centralGravity: parseFloat(sliderCenter.value),
+              gravitationalConstant: parseFloat(sliderRepel.value),
+              springConstant: parseFloat(sliderLink.value),
+              springLength: parseFloat(sliderDistance.value)
+            }
+          }
+        });
+      }
+
+      var debouncedApply = _debounce(applyPhysics, 50);
+
+      function setupSlider(slider, valEl) {
+        slider.addEventListener('input', function() {
+          valEl.textContent = this.value;
+          debouncedApply();
+        });
+      }
+
+      setupSlider(sliderCenter, valCenter);
+      setupSlider(sliderRepel, valRepel);
+      setupSlider(sliderLink, valLink);
+      setupSlider(sliderDistance, valDistance);
+
+      // Physics toggle (collapse/expand)
+      var physicsToggle = document.querySelector('.physics-toggle');
+      var physicsContent = document.querySelector('.physics-content');
+      if (physicsToggle) {
+        physicsToggle.addEventListener('click', function() {
+          physicsContent.style.display = physicsContent.style.display === 'none' ? 'block' : 'none';
+        });
+      }
+
+      // Reset physics
+      document.getElementById('btn-physics-reset').addEventListener('click', function() {
+        sliderCenter.value = physicsDefaults.center;
+        sliderRepel.value = physicsDefaults.repel;
+        sliderLink.value = physicsDefaults.link;
+        sliderDistance.value = physicsDefaults.distance;
+        valCenter.textContent = physicsDefaults.center;
+        valRepel.textContent = physicsDefaults.repel;
+        valLink.textContent = physicsDefaults.link;
+        valDistance.textContent = physicsDefaults.distance;
+        applyPhysics();
+      });
+
+      // Pause/Resume physics
+      document.getElementById('btn-physics-pause').addEventListener('click', function() {
+        physicsPaused = !physicsPaused;
+        network.setOptions({ physics: { enabled: !physicsPaused } });
+        this.textContent = physicsPaused ? 'Resume' : 'Pause';
+        this.style.color = physicsPaused ? '${THEME.text.secondary}' : '';
+      });
+
       // --- Metrics ---
       function updateMetrics() {
         var visible = nodesView.getIds().length;
@@ -463,6 +711,7 @@ module.exports = {
   _buildVisEdges,
   _buildLegend,
   _buildSidebar,
+  THEME,
   CATEGORY_COLORS,
   DEFAULT_COLOR,
   LIFECYCLE_STYLES,
