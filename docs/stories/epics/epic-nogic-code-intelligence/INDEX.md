@@ -71,10 +71,10 @@ Criar camada de code intelligence provider-agnostic em todas as tasks do AIOS, c
 ### Wave 7: Registry Quality (from GD-7 gap analysis + registry governance research)
 | Story | Title | Agent | Points | Status | Blocked By |
 |-------|-------|-------|--------|--------|------------|
-| [NOG-15](story-NOG-15-scanner-semantic-extractors.md) | Scanner Semantic Extractors | @dev | 5 | Ready for Review | None |
-| [NOG-16A](story-NOG-16-dependency-quality-filters.md) | Scan Config Expansion + Sentinel Filter | @dev | 3 | Draft | None |
-| [NOG-16B](story-NOG-16B-dependency-classification-lifecycle.md) | Dependency Classification + Lifecycle | @dev | 3 | Draft | NOG-16A |
-| [NOG-16C](story-NOG-16C-graph-filtering-focus-mode.md) | Graph Filtering + Focus Mode | @dev | 3 | Draft | NOG-16B |
+| [NOG-15](story-NOG-15-scanner-semantic-extractors.md) | Scanner Semantic Extractors | @dev | 5 | Done | None |
+| [NOG-16A](story-NOG-16-dependency-quality-filters.md) | Scan Config Expansion + Sentinel Filter | @dev | 3 | Done | None |
+| [NOG-16B](story-NOG-16B-dependency-classification-lifecycle.md) | Dependency Classification + Lifecycle | @dev | 3 | Done | ~~NOG-16A~~ |
+| [NOG-16C](story-NOG-16C-graph-filtering-focus-mode.md) | Graph Filtering + Focus Mode | @dev | 3 | Done | ~~NOG-16B~~ |
 
 ## Totals
 

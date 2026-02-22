@@ -7,7 +7,7 @@
 | **Story ID** | NOG-16C |
 | **Epic** | NOGIC — Code Intelligence Integration |
 | **Type** | Enhancement |
-| **Status** | Ready for Review |
+| **Status** | Done |
 | **Priority** | P2 |
 | **Points** | 3 |
 | **Agent** | @dev (Dex) |
@@ -299,6 +299,8 @@ Claude Opus 4.6
 | 1.0 | 2026-02-21 | Research | Story created from registry governance research (vis-network DataView + Nx focus mode patterns) |
 | 1.1 | 2026-02-22 | @po (Pax) | Validated: 4 should-fix corrections applied (blocked-by resolved, category count 14→11, self-healing config added, File List section added). Status Draft → Ready |
 | 2.0 | 2026-02-22 | @dev (Dex) | Implemented all 8 tasks: DataView filtering, sidebar, lifecycle styling, focus mode, search, performance opts, metrics/reset, tests |
+| 2.1 | 2026-02-22 | @qa (Quinn) | QA Review: PASS (quality_score 98). 7/7 ACs met. 229 graph-dashboard tests (32 new). Gate: `docs/qa/gates/nog-16c-graph-filtering-focus-mode.yml` |
+| 3.0 | 2026-02-22 | @po (Pax) | Story closed. Pushed as commits 9b1d0083, 9c4a4603. Status Ready for Review → Done |
 
 ## QA Results
 

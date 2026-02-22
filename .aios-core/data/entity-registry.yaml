@@ -1,6 +1,6 @@
 metadata:
   version: 1.0.0
-  lastUpdated: '2026-02-22T01:14:10.330Z'
+  lastUpdated: '2026-02-22T02:57:45.085Z'
   entityCount: 712
   checksumAlgorithm: sha256
   resolutionRate: 100
@@ -10069,7 +10069,7 @@ entities:
         constraints: []
         extensionPoints: []
       checksum: sha256:e508d6cbadcd2358fa7756dcaceefbaa510bd89155e036e2cbd386585408ff8f
-      lastVerified: '2026-02-22T01:14:10.326Z'
+      lastVerified: '2026-02-22T01:31:55.974Z'
     metrics-source:
       path: .aios-core/core/graph-dashboard/data-sources/metrics-source.js
       type: module
@@ -10146,8 +10146,8 @@ entities:
         score: 0.4
         constraints: []
         extensionPoints: []
-      checksum: sha256:e13e19d566196d8ff53a8b77615973d3003bbeb354c9651c1fbd3683b09d58cc
-      lastVerified: '2026-02-22T01:14:10.328Z'
+      checksum: sha256:8961110d25904185a8d95e967571d22692bbadad7e26ce6b22210cf771853149
+      lastVerified: '2026-02-22T02:57:45.082Z'
     json-formatter:
       path: .aios-core/core/graph-dashboard/formatters/json-formatter.js
       type: module
