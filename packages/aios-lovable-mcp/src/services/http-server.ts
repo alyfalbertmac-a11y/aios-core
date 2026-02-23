@@ -106,6 +106,27 @@ export class HttpServer {
       });
     });
 
+    // Lovable connection test endpoint
+    this.app.post('/api/auth', async (req: AuthRequest, res) => {
+      try {
+        if (!req.apiKey) {
+          return res.status(401).json({
+            error: { code: 'UNAUTHORIZED', message: 'API key required' },
+          });
+        }
+        res.json({
+          authenticated: true,
+          api_key: req.apiKey,
+          server_name: 'AIOS Lovable MCP',
+          ready: true,
+        });
+      } catch (error) {
+        res.status(500).json({
+          error: { code: 'AUTH_FAILED', message: 'Authentication failed' },
+        });
+      }
+    });
+
     // Health check
     this.app.get('/health', (req, res) => {
       res.json({
