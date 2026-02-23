@@ -238,14 +238,25 @@ async function main() {
         httpTransport.setMessageHandler(async (sessionId, jsonrpcRequest) => {
             await bridge.handleRequest(sessionId, jsonrpcRequest);
         });
-        // Mount /mcp endpoint (POST and GET)
-        httpServer.app.post('/mcp', async (req, res) => {
-            console.error('[MCP HTTP] POST /mcp');
-            await httpTransport.handlePost(req, res);
+        // Mount /mcp endpoint - TEST VERSION
+        httpServer.app.get('/mcp', (req, res) => {
+            console.error('[MCP HTTP] GET /mcp - responding with server info');
+            res.json({
+                name: 'aios-lovable-mcp',
+                version: '0.1.0',
+                status: 'ready',
+                protocol: 'MCP 2025-06-18',
+            });
         });
-        httpServer.app.get('/mcp', async (req, res) => {
-            console.error('[MCP HTTP] GET /mcp');
-            await httpTransport.handleGet(req, res);
+        httpServer.app.post('/mcp', async (req, res) => {
+            console.error('[MCP HTTP] POST /mcp - handling JSON-RPC request');
+            try {
+                await httpTransport.handlePost(req, res);
+            }
+            catch (error) {
+                console.error('[MCP HTTP] Error in POST:', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
         });
         // Start the HTTP server
         await httpServer.start();
