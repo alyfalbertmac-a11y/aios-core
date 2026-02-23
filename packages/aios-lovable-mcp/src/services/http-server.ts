@@ -47,7 +47,7 @@ export class HttpServer {
       const apiKey = match ? match[1] : req.query.api_key;
 
       // Skip auth for public endpoints
-      if (req.path === '/' || req.path === '/health') {
+      if (req.path === '/' || req.path === '/health' || req.path === '/mcp') {
         return next();
       }
 
@@ -88,6 +88,20 @@ export class HttpServer {
         endpoints: {
           health: '/health',
           jobs: '/api/jobs',
+          mcp: '/mcp',
+        },
+      });
+    });
+
+    // MCP server info endpoint (no auth required)
+    this.app.get('/mcp', (req, res) => {
+      res.json({
+        type: 'mcp-server',
+        name: 'AIOS Lovable',
+        version: '1.0.0',
+        capabilities: {
+          tools: 7,
+          resources: ['strategize', 'design', 'architecture', 'code', 'pipeline', 'status', 'artifact'],
         },
       });
     });
