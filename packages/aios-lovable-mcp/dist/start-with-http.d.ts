@@ -4,8 +4,8 @@
  *
  * This allows:
  * - Local testing via HTTP on :3000
- * - Lovable integration via HTTP endpoints
- * - Full MCP tool availability
+ * - Lovable integration via modern Streamable HTTP MCP transport
+ * - Full MCP tool availability via both stdio and HTTP
  */
 export {};
 //# sourceMappingURL=start-with-http.d.ts.map

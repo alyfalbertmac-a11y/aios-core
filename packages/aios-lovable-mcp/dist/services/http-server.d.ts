@@ -4,8 +4,9 @@
  * Provides REST endpoints for job management and SSE for real-time updates.
  * Also integrates MCP server via stdio.
  */
+import { Express } from 'express';
 export declare class HttpServer {
-    private app;
+    readonly app: Express;
     private port;
     private sseClients;
     constructor(port?: number);
