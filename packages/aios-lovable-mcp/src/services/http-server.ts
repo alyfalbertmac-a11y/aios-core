@@ -259,7 +259,7 @@ export class HttpServer {
   }
 
   start(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.app.listen(this.port, '0.0.0.0', () => {
         console.error(`[HTTP Server] 🚀 Started on 0.0.0.0:${this.port}`);
         console.error(`[HTTP Server] Endpoints:`);
@@ -268,7 +268,10 @@ export class HttpServer {
         console.error(`  GET    /api/jobs/:jobId/stream - Real-time SSE updates`);
         console.error(`  POST   /api/webhooks/test - Test webhook delivery`);
         console.error(`  GET    /health - Health check`);
-        resolve();
+        // Never resolve - keep server running indefinitely
+      }).on('error', (err) => {
+        console.error(`[HTTP Server] ❌ Failed to start:`, err);
+        reject(err);
       });
     });
   }
