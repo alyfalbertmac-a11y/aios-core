@@ -5,6 +5,7 @@
  * Also integrates MCP server via stdio.
  */
 import express from 'express';
+import cors from 'cors';
 import { jobQueue, getJobStatus } from './queue.js';
 import { apiKeyManager } from './api-keys.js';
 import { webhookService } from './webhook.js';
@@ -19,6 +20,13 @@ export class HttpServer {
         this.setupRoutes();
     }
     setupMiddleware() {
+        // CORS - allow requests from Lovable and other origins
+        this.app.use(cors({
+            origin: '*',
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization'],
+            credentials: false,
+        }));
         // Parse JSON
         this.app.use(express.json({ limit: '10mb' }));
         // API Key validation middleware
@@ -54,6 +62,18 @@ export class HttpServer {
         });
     }
     setupRoutes() {
+        // Root endpoint (no auth required)
+        this.app.get('/', (req, res) => {
+            res.json({
+                name: 'AIOS Lovable MCP Server',
+                version: '1.0.0',
+                status: 'ready',
+                endpoints: {
+                    health: '/health',
+                    jobs: '/api/jobs',
+                },
+            });
+        });
         // Health check
         this.app.get('/health', (req, res) => {
             res.json({
