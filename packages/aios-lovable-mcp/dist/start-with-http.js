@@ -4,50 +4,68 @@
  *
  * This allows:
  * - Local testing via HTTP on :3000
- * - Lovable integration via modern Streamable HTTP MCP transport
+ * - Lovable integration via Server-Sent Events (SSE) MCP transport
  * - Full MCP tool availability via both stdio and HTTP
  */
 import { createServer } from './server.js';
 import { HttpServer } from './services/http-server.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 const HTTP_PORT = parseInt(process.env.PORT || '3000', 10);
 const MCP_ENABLED = process.env.MCP_ENABLED !== 'false';
 async function main() {
     try {
         // Start HTTP server
         const httpServer = new HttpServer(HTTP_PORT);
-        // Mount modern Streamable HTTP MCP transport on /mcp
-        // This allows HTTP-based MCP clients (like Lovable) to connect
-        httpServer.app.post('/mcp', async (req, res) => {
-            console.error(`[MCP HTTP] New Streamable HTTP request`);
+        // Track active SSE transports by session ID
+        const sseTransports = new Map();
+        // Mount SSE MCP transport on /mcp (GET for connection, POST for messages)
+        // This is the standard pattern for Lovable integration
+        httpServer.app.get('/mcp', async (req, res) => {
+            console.error('[MCP SSE] New SSE connection request');
             const mcpServer = createServer();
-            const transport = new StreamableHTTPServerTransport();
+            const transport = new SSEServerTransport('/mcp/message', res);
+            sseTransports.set(transport.sessionId, transport);
+            console.error(`[MCP SSE] Session created: ${transport.sessionId}`);
+            // Clean up on disconnect
+            res.on('close', () => {
+                console.error(`[MCP SSE] Session closed: ${transport.sessionId}`);
+                sseTransports.delete(transport.sessionId);
+                transport.close().catch(() => { });
+            });
             try {
-                console.error(`[MCP HTTP] Connecting MCP server to Streamable HTTP transport`);
                 await mcpServer.connect(transport);
-                // Handle the HTTP request/response
-                await transport.handleRequest(req, res);
-                console.error(`[MCP HTTP] Request handled successfully`);
+                console.error(`[MCP SSE] MCP server connected for session: ${transport.sessionId}`);
             }
             catch (err) {
-                console.error('[MCP HTTP] Connection error:', err);
+                console.error('[MCP SSE] Connection error:', err);
+                sseTransports.delete(transport.sessionId);
                 if (!res.headersSent) {
-                    res.status(500).json({ error: 'MCP connection failed' });
+                    res.status(500).end();
                 }
             }
         });
-        // Also support GET for initial connection probes
-        httpServer.app.get('/mcp', (req, res) => {
-            res.json({
-                type: 'mcp-server',
-                name: 'AIOS Lovable',
-                version: '1.0.0',
-                transport: 'streamable-http',
-                capabilities: {
-                    tools: 7,
-                },
-            });
+        // Handle messages from clients
+        httpServer.app.post('/mcp/message', async (req, res) => {
+            const sessionId = req.headers['mcp-session-id'];
+            if (!sessionId) {
+                res.status(400).json({ error: 'mcp-session-id header required' });
+                return;
+            }
+            const transport = sseTransports.get(sessionId);
+            if (!transport) {
+                res.status(404).json({ error: `Session ${sessionId} not found` });
+                return;
+            }
+            try {
+                await transport.handlePostMessage(req, res);
+            }
+            catch (err) {
+                console.error('[MCP SSE] Message handling error:', err);
+                if (!res.headersSent) {
+                    res.status(500).json({ error: 'Message handling failed' });
+                }
+            }
         });
         await httpServer.start();
         // Optionally start MCP server on stdio (for local dev / CLI usage)
@@ -65,7 +83,7 @@ async function main() {
 
 Services Running:
    HTTP REST API:  http://localhost:${HTTP_PORT}
-   MCP Streamable: http://localhost:${HTTP_PORT}/mcp
+   MCP SSE:        http://localhost:${HTTP_PORT}/mcp
    7 MCP Tools:    Available
    Webhooks:       Ready
 
@@ -76,7 +94,8 @@ Configuration for Lovable:
    API Key:           (set via AIOS_API_KEYS env var)
 
 Endpoints:
-   ALL    /mcp                       Modern Streamable HTTP MCP transport
+   GET    /mcp                       SSE connection for MCP
+   POST   /mcp/message               Message handling (mcp-session-id header required)
    GET    /health                    Health check
    POST   /api/auth                  Auth validation
    POST   /api/jobs                  Create job

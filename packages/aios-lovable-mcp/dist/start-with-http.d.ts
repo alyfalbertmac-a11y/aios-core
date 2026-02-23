@@ -4,7 +4,7 @@
  *
  * This allows:
  * - Local testing via HTTP on :3000
- * - Lovable integration via modern Streamable HTTP MCP transport
+ * - Lovable integration via Server-Sent Events (SSE) MCP transport
  * - Full MCP tool availability via both stdio and HTTP
  */
 export {};
