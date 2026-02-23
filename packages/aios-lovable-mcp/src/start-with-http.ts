@@ -23,6 +23,9 @@ async function main(): Promise<void> {
     // Start HTTP server
     const httpServer = new HttpServer(HTTP_PORT);
 
+    // Create a single MCP server instance for all SSE connections
+    const mcpServer = createServer();
+
     // Track active SSE transports by session ID
     const sseTransports = new Map<string, SSEServerTransport>();
 
@@ -30,9 +33,9 @@ async function main(): Promise<void> {
     // This is the standard pattern for Lovable integration
     httpServer.app.get('/mcp', async (req: Request, res: Response) => {
       console.error('[MCP SSE] New SSE connection request');
-      const mcpServer = createServer();
-      const transport = new SSEServerTransport('/mcp/message', res);
 
+      // Create transport for this connection
+      const transport = new SSEServerTransport('/mcp/message', res);
       sseTransports.set(transport.sessionId, transport);
       console.error(`[MCP SSE] Session created: ${transport.sessionId}`);
 
@@ -44,6 +47,7 @@ async function main(): Promise<void> {
       });
 
       try {
+        // Use the single shared MCP server for this transport
         await mcpServer.connect(transport);
         console.error(`[MCP SSE] MCP server connected for session: ${transport.sessionId}`);
       } catch (err) {
