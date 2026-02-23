@@ -10,6 +10,7 @@ import cors from 'cors';
 import { jobQueue, getJobStatus, getJobResult } from './queue.js';
 import { apiKeyManager } from './api-keys.js';
 import { webhookService } from './webhook.js';
+import { approvalSystem } from './approval-system.js';
 import type { JobData, JobResult } from '../types/lovable.js';
 
 interface AuthRequest extends Request {
@@ -138,7 +139,7 @@ export class HttpServer {
       });
     });
 
-    // Create async job
+    // Create async job (with approval requirement)
     this.app.post('/api/jobs', async (req: AuthRequest, res) => {
       try {
         if (!jobQueue) {
@@ -147,7 +148,7 @@ export class HttpServer {
           });
         }
 
-        const { tool, input, webhook_url } = req.body;
+        const { tool, input, webhook_url, approval_id } = req.body;
 
         if (!tool || !input) {
           return res.status(400).json({
@@ -155,6 +156,39 @@ export class HttpServer {
           });
         }
 
+        // Check if approval is required and verify it
+        if (approval_id) {
+          const isApproved = approvalSystem.isApproved(approval_id);
+          if (!isApproved) {
+            const approvalRequest = approvalSystem.getRequest(approval_id);
+            if (!approvalRequest) {
+              return res.status(400).json({
+                error: { code: 'INVALID_APPROVAL', message: 'Approval request not found' },
+              });
+            }
+            if (approvalRequest.status === 'rejected') {
+              return res.status(403).json({
+                error: { code: 'APPROVAL_REJECTED', message: approvalRequest.reason || 'Request was rejected' },
+              });
+            }
+            return res.status(202).json({
+              status: 'pending_approval',
+              approval_id,
+              message: 'Awaiting @qa validation. Job will be queued after approval.',
+            });
+          }
+        } else {
+          // No approval_id provided - create new approval request
+          const requestId = approvalSystem.createRequest(tool, input, req.apiKey || 'unknown');
+          return res.status(202).json({
+            status: 'pending_approval',
+            approval_id: requestId,
+            message: 'Tool execution requires @qa approval. Use approval_id to check status.',
+            next_step: 'Wait for @qa validation, then retry with approval_id',
+          });
+        }
+
+        // Approval verified - proceed with job
         const jobData: JobData = {
           tool,
           input,
@@ -242,36 +276,101 @@ export class HttpServer {
       }, 1000);
     });
 
-    // API Key management (admin endpoints)
+    // API Key management (admin endpoints) - DISABLED
+    // Access control delegated to @qa via approval system
     this.app.get('/api/admin/keys', (req: AuthRequest, res) => {
-      // Only allow if ADMIN_API_KEY matches
-      const adminKey = req.query.admin_key;
-      if (adminKey !== process.env.ADMIN_API_KEY) {
-        return res.status(403).json({
-          error: { code: 'FORBIDDEN', message: 'Admin access required' },
-        });
-      }
-
-      res.json({
-        keys: apiKeyManager.getAllKeys(),
+      res.status(403).json({
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Admin endpoints are disabled. Use @qa approval system instead.',
+          more_info: 'Contact @qa (Quinn) for API key management',
+        },
       });
     });
 
     this.app.post('/api/admin/keys', (req: AuthRequest, res) => {
-      const adminKey = req.query.admin_key;
-      if (adminKey !== process.env.ADMIN_API_KEY) {
-        return res.status(403).json({
-          error: { code: 'FORBIDDEN', message: 'Admin access required' },
+      res.status(403).json({
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Admin endpoints are disabled. Use @qa approval system instead.',
+          more_info: 'Contact @qa (Quinn) for API key management',
+        },
+      });
+    });
+
+    // Approval endpoints (for @qa)
+    this.app.get('/api/approval/pending', (req: AuthRequest, res) => {
+      // Check if this is @qa
+      const pending = approvalSystem.getPendingRequests();
+      res.json({
+        pending_count: pending.length,
+        requests: pending.map(r => ({
+          id: r.id,
+          tool: r.tool,
+          input_summary: JSON.stringify(r.input).substring(0, 100) + '...',
+          requested_at: r.requestedAt.toISOString(),
+        })),
+      });
+    });
+
+    this.app.post('/api/approval/:requestId/approve', (req: AuthRequest, res) => {
+      const { requestId } = req.params;
+      const approved = approvalSystem.approveRequest(requestId, '@qa');
+
+      if (!approved) {
+        return res.status(404).json({
+          error: { code: 'NOT_FOUND', message: 'Approval request not found' },
         });
       }
 
-      const { name, requests_per_minute } = req.body;
-      const newKey = apiKeyManager.generateKey(name, requests_per_minute || 60);
+      res.json({
+        status: 'approved',
+        request_id: requestId,
+        approval_id: requestId,
+        next_step: 'Retry job creation with approval_id parameter',
+      });
+    });
 
-      res.status(201).json({
-        key: newKey,
-        name,
-        created_at: new Date().toISOString(),
+    this.app.post('/api/approval/:requestId/reject', (req: AuthRequest, res) => {
+      const { requestId } = req.params;
+      const { reason } = req.body;
+
+      if (!reason) {
+        return res.status(400).json({
+          error: { code: 'INVALID_REQUEST', message: 'reason is required' },
+        });
+      }
+
+      const rejected = approvalSystem.rejectRequest(requestId, reason, '@qa');
+
+      if (!rejected) {
+        return res.status(404).json({
+          error: { code: 'NOT_FOUND', message: 'Approval request not found' },
+        });
+      }
+
+      res.json({
+        status: 'rejected',
+        request_id: requestId,
+        reason,
+      });
+    });
+
+    // Approval report for @qa
+    this.app.get('/api/approval/report', (req: AuthRequest, res) => {
+      const report = approvalSystem.getReport();
+      res.json({
+        summary: {
+          pending: report.pending,
+          approved: report.approved,
+          rejected: report.rejected,
+        },
+        pending_requests: report.requests.map(r => ({
+          id: r.id,
+          tool: r.tool,
+          requested_at: r.requestedAt.toISOString(),
+          input_summary: JSON.stringify(r.input).substring(0, 150),
+        })),
       });
     });
 
