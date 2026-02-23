@@ -25,6 +25,7 @@ import { httpTransport } from './services/http-transport.js';
 import type { Request, Response } from 'express';
 
 const HTTP_PORT = parseInt(process.env.PORT || '3000', 10);
+// Railway deployment fix - Feb 23
 
 /**
  * Custom HTTP transport bridge for MCP server.

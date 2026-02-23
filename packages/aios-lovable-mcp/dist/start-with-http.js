@@ -21,6 +21,7 @@ import { createServer } from './server.js';
 import { HttpServer } from './services/http-server.js';
 import { httpTransport } from './services/http-transport.js';
 const HTTP_PORT = parseInt(process.env.PORT || '3000', 10);
+// Railway deployment fix - Feb 23
 /**
  * Custom HTTP transport bridge for MCP server.
  * Converts JSON-RPC messages to/from MCP server calls.
