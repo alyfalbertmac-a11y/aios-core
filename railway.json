@@ -4,8 +4,12 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "cd packages/aios-lovable-mcp && MCP_ENABLED=false node dist/start-with-http.js",
+    "startCommand": "MCP_ENABLED=false node dist/start-with-http.js",
     "restartPolicyMaxRetries": 5,
-    "restartPolicyWindowSeconds": 60
+    "restartPolicyWindowSeconds": 60,
+    "envVariables": {
+      "NODE_ENV": "production",
+      "PORT": "3000"
+    }
   }
 }
