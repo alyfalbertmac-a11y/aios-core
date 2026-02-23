@@ -35,7 +35,7 @@ export class HttpServer {
             const match = authHeader.match(/Bearer\s+(.+)/);
             const apiKey = match ? match[1] : req.query.api_key;
             // Skip auth for public endpoints
-            if (req.path === '/' || req.path === '/health') {
+            if (req.path === '/' || req.path === '/health' || req.path === '/mcp') {
                 return next();
             }
             if (!apiKey) {
@@ -71,8 +71,42 @@ export class HttpServer {
                 endpoints: {
                     health: '/health',
                     jobs: '/api/jobs',
+                    mcp: '/mcp',
                 },
             });
+        });
+        // MCP server info endpoint (no auth required)
+        this.app.get('/mcp', (req, res) => {
+            res.json({
+                type: 'mcp-server',
+                name: 'AIOS Lovable',
+                version: '1.0.0',
+                capabilities: {
+                    tools: 7,
+                    resources: ['strategize', 'design', 'architecture', 'code', 'pipeline', 'status', 'artifact'],
+                },
+            });
+        });
+        // Lovable connection test endpoint
+        this.app.post('/api/auth', async (req, res) => {
+            try {
+                if (!req.apiKey) {
+                    return res.status(401).json({
+                        error: { code: 'UNAUTHORIZED', message: 'API key required' },
+                    });
+                }
+                res.json({
+                    authenticated: true,
+                    api_key: req.apiKey,
+                    server_name: 'AIOS Lovable MCP',
+                    ready: true,
+                });
+            }
+            catch (error) {
+                res.status(500).json({
+                    error: { code: 'AUTH_FAILED', message: 'Authentication failed' },
+                });
+            }
         });
         // Health check
         this.app.get('/health', (req, res) => {
