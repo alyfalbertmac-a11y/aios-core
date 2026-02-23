@@ -84,6 +84,102 @@ export interface GenerateCodeOutput {
     };
     setup_instructions: string;
 }
+export interface StrategizeInput {
+    product_name: string;
+    description?: string;
+    target_segments?: string[];
+    key_problems?: string[];
+    success_metrics?: string[];
+    market_context?: string;
+}
+export interface Strategy {
+    product_vision: string;
+    target_segments: Array<{
+        segment: string;
+        size: string;
+        growth: string;
+    }>;
+    positioning: {
+        unique_value_prop: string;
+        competitive_advantage: string;
+        market_positioning: string;
+    };
+    roadmap: {
+        phase_1_3months: string[];
+        phase_2_6months: string[];
+        phase_3_12months: string[];
+    };
+}
+export interface PRD {
+    title: string;
+    version: string;
+    created_at: string;
+    overview: {
+        product_name: string;
+        description: string;
+        target_users: string;
+    };
+    functional_requirements: Array<{
+        id: string;
+        category: string;
+        requirement: string;
+        priority: string;
+    }>;
+    non_functional_requirements: Array<{
+        id: string;
+        requirement: string;
+        priority: string;
+    }>;
+    success_metrics: string[];
+}
+export interface StrategizeOutput {
+    strategy: Strategy;
+    prd: PRD;
+    strategy_markdown: string;
+    prd_markdown: string;
+}
+export interface DesignUXInput {
+    product_name: string;
+    user_flows?: string[];
+    design_preferences?: Record<string, unknown>;
+    accessibility_requirements?: string[];
+}
+export interface DesignSystem {
+    typography: Record<string, unknown>;
+    colors: Record<string, unknown>;
+    spacing: Record<string, unknown>;
+    shadows: Record<string, unknown>;
+    components: Array<Record<string, unknown>>;
+}
+export interface Wireframe {
+    page: string;
+    layout: string;
+    key_elements: string[];
+}
+export interface DesignUXOutput {
+    design_system: DesignSystem;
+    wireframes: Wireframe[];
+    design_system_markdown: string;
+    wireframes_markdown: string;
+    accessibility_guidelines: string[];
+}
+export interface JobData {
+    tool: string;
+    input: Record<string, unknown>;
+    priority?: 'low' | 'normal' | 'high';
+    webhook_url?: string;
+}
+export interface JobResult {
+    job_id: string;
+    status: 'queued' | 'processing' | 'completed' | 'failed';
+    output?: unknown;
+    error?: AiosError;
+}
+export interface AgentTask {
+    id: string;
+    name: string;
+    status: 'pending' | 'running' | 'completed' | 'failed';
+}
 export interface AgentRequest {
     tool: string;
     input: Record<string, unknown>;
