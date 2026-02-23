@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 /**
- * Start AIOS Lovable MCP Server with HTTP JSON-RPC transport
+ * Start AIOS Lovable MCP Server with SSE transport on /sse endpoint
  *
  * This allows:
  * - Local testing via HTTP on :3000
- * - Lovable integration via simple HTTP JSON-RPC transport
+ * - Lovable integration via SSE MCP transport (like CoinGecko)
  * - Full MCP tool availability
  */
 import { createServer } from './server.js';
 import { HttpServer } from './services/http-server.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 const HTTP_PORT = parseInt(process.env.PORT || '3000', 10);
 const MCP_ENABLED = process.env.MCP_ENABLED !== 'false';
 async function main() {
@@ -18,59 +19,66 @@ async function main() {
         const httpServer = new HttpServer(HTTP_PORT);
         // Create a single MCP server instance
         const mcpServer = createServer();
-        // Mount HTTP JSON-RPC transport on /mcp
-        // Simple POST-based protocol for Lovable integration
-        httpServer.app.post('/mcp', async (req, res) => {
+        // Track active SSE transports by session ID
+        const sseTransports = new Map();
+        // Mount SSE MCP transport on /sse (like CoinGecko uses)
+        // This is the pattern that Lovable successfully connects to
+        httpServer.app.get('/sse', async (req, res) => {
+            console.error('[MCP SSE] New SSE connection request');
+            // Create transport for this connection
+            const transport = new SSEServerTransport('/sse/message', res);
+            sseTransports.set(transport.sessionId, transport);
+            console.error(`[MCP SSE] Session created: ${transport.sessionId}`);
+            // Clean up on disconnect
+            res.on('close', () => {
+                console.error(`[MCP SSE] Session closed: ${transport.sessionId}`);
+                sseTransports.delete(transport.sessionId);
+                transport.close().catch(() => { });
+            });
             try {
-                console.error('[MCP HTTP-RPC] Received request:', req.body);
-                // For now, return a simple initialize response to test connection
-                // This is a basic JSON-RPC 2.0 response
-                const response = {
-                    jsonrpc: '2.0',
-                    id: req.body?.id || 1,
-                    result: {
-                        protocolVersion: '2024-11-05',
-                        capabilities: {
-                            tools: {
-                                listChanged: true,
-                            },
-                            prompts: {},
-                            resources: {},
-                        },
-                        serverInfo: {
-                            name: 'AIOS Lovable MCP',
-                            version: '1.0.0',
-                        },
-                    }
-                };
-                console.error('[MCP HTTP-RPC] Sending response:', response);
-                res.json(response);
+                // Use the single shared MCP server for this transport
+                await mcpServer.connect(transport);
+                console.error(`[MCP SSE] MCP server connected for session: ${transport.sessionId}`);
             }
             catch (err) {
-                console.error('[MCP HTTP-RPC] Error:', err);
-                const errorMessage = err instanceof Error ? err.message : String(err);
-                res.status(500).json({
-                    jsonrpc: '2.0',
-                    error: {
-                        code: -32603,
-                        message: 'Internal error',
-                        data: { details: errorMessage }
-                    },
-                    id: (req.body && req.body.id) || null
-                });
+                console.error('[MCP SSE] Connection error:', err);
+                sseTransports.delete(transport.sessionId);
+                if (!res.headersSent) {
+                    res.status(500).end();
+                }
             }
         });
-        // Support GET /mcp for connection test
-        httpServer.app.get('/mcp', (req, res) => {
+        // Handle messages from clients
+        httpServer.app.post('/sse/message', async (req, res) => {
+            // Accept sessionId from either header or query parameter
+            const sessionId = req.headers['mcp-session-id'] || req.query.sessionId;
+            if (!sessionId) {
+                res.status(400).json({ error: 'sessionId required (header or query parameter)' });
+                return;
+            }
+            const transport = sseTransports.get(sessionId);
+            if (!transport) {
+                res.status(404).json({ error: `Session ${sessionId} not found` });
+                return;
+            }
+            try {
+                await transport.handlePostMessage(req, res);
+            }
+            catch (err) {
+                console.error('[MCP SSE] Message handling error:', err);
+                if (!res.headersSent) {
+                    res.status(500).json({ error: 'Message handling failed' });
+                }
+            }
+        });
+        // Support GET / for root (some clients expect this)
+        httpServer.app.get('/', (req, res) => {
             res.json({
                 type: 'mcp-server',
                 name: 'AIOS Lovable',
                 version: '1.0.0',
-                transport: 'http-jsonrpc',
-                capabilities: {
-                    tools: 7,
-                    resources: ['strategize', 'design', 'architecture', 'code', 'pipeline', 'status', 'artifact'],
-                },
+                transport: 'sse',
+                status: 'ready',
             });
         });
         await httpServer.start();
