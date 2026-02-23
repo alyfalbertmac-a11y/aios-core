@@ -47,7 +47,7 @@ export class HttpServer {
       const apiKey = match ? match[1] : req.query.api_key;
 
       // Skip auth for public endpoints
-      if (req.path === '/' || req.path === '/health' || req.path === '/mcp') {
+      if (req.path === '/' || req.path === '/health' || req.path === '/mcp' || req.path === '/api/auth') {
         return next();
       }
 
