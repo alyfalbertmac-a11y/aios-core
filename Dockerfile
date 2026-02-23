@@ -45,3 +45,4 @@ ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/start-with-http.js"]
 ENV PORT=3000
 ENV NODE_ENV=production
+ENV MCP_ENABLED=false
