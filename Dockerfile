@@ -42,4 +42,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Entrypoint (force PORT=3000 to override Railway defaults)
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["sh", "-c", "export PORT=3000 && node dist/start-with-http.js"]
+CMD ["node", "dist/start-with-http.js"]
+ENV PORT=3000
+ENV NODE_ENV=production
