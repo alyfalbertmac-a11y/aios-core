@@ -11,7 +11,7 @@
     "build": "tsc",
     "dev": "tsx src/server.ts",
     "dev:http": "tsx src/start-with-http.ts",
-    "start": "node dist/server.js",
+    "start": "node dist/start-with-http.js",
     "start:http": "node dist/start-with-http.js",
     "test": "vitest run",
     "test:watch": "vitest",
