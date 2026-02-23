@@ -1,0 +1,50 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "dockerfile",
+    "rootDirectory": "packages/aios-lovable-mcp"
+  },
+  "deploy": {
+    "startCommand": "node dist/server.js",
+    "restartPolicyType": "always",
+    "restartPolicyMaxRetries": 5
+  },
+  "plugins": [
+    {
+      "source": "redis"
+    }
+  ],
+  "variables": {
+    "NODE_ENV": {
+      "description": "Node.js environment",
+      "value": "production"
+    },
+    "QUEUE_CONCURRENCY": {
+      "description": "Max concurrent jobs",
+      "value": "10"
+    },
+    "PORT": {
+      "description": "HTTP server port",
+      "value": "3000"
+    },
+    "AIOS_API_KEYS": {
+      "description": "API keys for authentication (JSON format)",
+      "value": ""
+    },
+    "ADMIN_API_KEY": {
+      "description": "Secret key for admin endpoints",
+      "value": ""
+    },
+    "LOG_LEVEL": {
+      "description": "Logging level (debug|info|warn|error)",
+      "value": "info"
+    }
+  },
+  "healthCheck": {
+    "path": "/health",
+    "interval": 30,
+    "timeout": 10,
+    "startPeriod": 5,
+    "retries": 3
+  }
+}
