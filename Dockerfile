@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine as builder
+FROM node:22-alpine as builder
 
 WORKDIR /build
 
@@ -17,7 +17,7 @@ WORKDIR /build/packages/aios-lovable-mcp
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
