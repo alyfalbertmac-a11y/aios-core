@@ -1,1 +1,1 @@
-web: cd packages/aios-lovable-mcp && npm run start
+web: node index.js
