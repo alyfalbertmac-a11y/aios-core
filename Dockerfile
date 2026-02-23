@@ -44,6 +44,6 @@ USER app
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-# Entrypoint
+# Entrypoint (force PORT=3000 to override Railway defaults)
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "dist/start-with-http.js"]
+CMD ["sh", "-c", "export PORT=3000 && node dist/start-with-http.js"]
