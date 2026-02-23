@@ -24,9 +24,6 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install dumb-init
-RUN apk add --no-cache dumb-init
-
 # Copy package files from aios-lovable-mcp
 COPY packages/aios-lovable-mcp/package*.json ./
 
