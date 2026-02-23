@@ -29,9 +29,8 @@ RUN apk add --no-cache dumb-init
 # Copy package.json for reference
 COPY packages/aios-lovable-mcp/package.json ./
 
-# Copy node_modules from builder (already compiled)
-COPY --from=builder /workspace/node_modules ./node_modules
-COPY --from=builder /workspace/packages/aios-lovable-mcp/node_modules ./aios_modules
+# Copy node_modules from builder (package-specific dependencies)
+COPY --from=builder /workspace/packages/aios-lovable-mcp/node_modules ./node_modules
 
 # Copy only dist folder
 COPY --from=builder /workspace/packages/aios-lovable-mcp/dist ./dist
