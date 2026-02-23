@@ -46,5 +46,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start server with HTTP support
+# Start server with HTTP support (cache bust: 2026-02-22-v2)
 CMD ["node", "dist/start-with-http.js"]
