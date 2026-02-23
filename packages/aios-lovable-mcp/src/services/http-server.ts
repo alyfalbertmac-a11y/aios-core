@@ -17,7 +17,7 @@ interface AuthRequest extends Request {
 }
 
 export class HttpServer {
-  private app: Express;
+  readonly app: Express;
   private port: number;
   private sseClients = new Map<string, Response>();
 
@@ -47,7 +47,7 @@ export class HttpServer {
       const apiKey = match ? match[1] : req.query.api_key;
 
       // Skip auth for public endpoints
-      if (req.path === '/' || req.path === '/health' || req.path === '/mcp' || req.path === '/api/auth') {
+      if (req.path === '/' || req.path === '/health' || req.path === '/mcp' || req.path === '/api/auth' || req.path === '/sse' || req.path === '/messages') {
         return next();
       }
 
@@ -107,16 +107,28 @@ export class HttpServer {
     });
 
     // Lovable connection test endpoint
+    // Note: /api/auth is in the skip-auth list, so we parse the token here directly
     this.app.post('/api/auth', async (req: AuthRequest, res) => {
       try {
-        if (!req.apiKey) {
+        const authHeader = req.headers.authorization || '';
+        const match = authHeader.match(/Bearer\s+(.+)/);
+        const apiKey = match ? match[1] : (req.query.api_key as string);
+
+        if (!apiKey) {
           return res.status(401).json({
             error: { code: 'UNAUTHORIZED', message: 'API key required' },
           });
         }
+
+        const validation = apiKeyManager.validateKey(apiKey);
+        if (!validation.valid) {
+          return res.status(401).json({
+            error: { code: 'INVALID_KEY', message: validation.error },
+          });
+        }
+
         res.json({
           authenticated: true,
-          api_key: req.apiKey,
           server_name: 'AIOS Lovable MCP',
           ready: true,
         });
