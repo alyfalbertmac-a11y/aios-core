@@ -13,6 +13,9 @@ import { webhookService } from './webhook.js';
 import { approvalSystem } from './approval-system.js';
 import type { JobData, JobResult } from '../types/lovable.js';
 
+// Export approval system for use across modules
+export { approvalSystem };
+
 interface AuthRequest extends Request {
   apiKey?: string;
 }

@@ -5,6 +5,8 @@
  * Also integrates MCP server via stdio.
  */
 import { Express } from 'express';
+import { approvalSystem } from './approval-system.js';
+export { approvalSystem };
 export declare class HttpServer {
     readonly app: Express;
     private port;
