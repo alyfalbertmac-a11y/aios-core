@@ -11,8 +11,8 @@ WORKDIR /build
 # Copy monorepo files
 COPY package.json package-lock.json ./
 
-# Install all dependencies
-RUN npm ci
+# Install all dependencies (respects workspaces)
+RUN npm install --prefer-offline --no-audit
 
 # Copy all packages
 COPY packages ./packages
