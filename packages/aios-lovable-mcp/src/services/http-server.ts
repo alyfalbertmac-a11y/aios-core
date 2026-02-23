@@ -82,6 +82,12 @@ export class HttpServer {
     // Create async job
     this.app.post('/api/jobs', async (req: AuthRequest, res) => {
       try {
+        if (!jobQueue) {
+          return res.status(503).json({
+            error: { code: 'SERVICE_UNAVAILABLE', message: 'Job queue service not available - Redis not configured' },
+          });
+        }
+
         const { tool, input, webhook_url } = req.body;
 
         if (!tool || !input) {
@@ -254,8 +260,8 @@ export class HttpServer {
 
   start(): Promise<void> {
     return new Promise((resolve) => {
-      this.app.listen(this.port, () => {
-        console.error(`[HTTP Server] 🚀 Started on port ${this.port}`);
+      this.app.listen(this.port, '0.0.0.0', () => {
+        console.error(`[HTTP Server] 🚀 Started on 0.0.0.0:${this.port}`);
         console.error(`[HTTP Server] Endpoints:`);
         console.error(`  POST   /api/jobs - Create async job`);
         console.error(`  GET    /api/jobs/:jobId - Check job status`);

@@ -1,7 +1,7 @@
 import { Queue, QueueEvents } from 'bullmq';
 import type { JobData, JobResult } from '../types/lovable.js';
-export declare const jobQueue: Queue<JobData, JobResult, string, JobData, JobResult, string>;
-export declare const queueEvents: QueueEvents;
+export declare let jobQueue: Queue<JobData, JobResult> | null;
+export declare let queueEvents: QueueEvents | null;
 interface JobStatusInfo {
     status: string;
     progress: number;
