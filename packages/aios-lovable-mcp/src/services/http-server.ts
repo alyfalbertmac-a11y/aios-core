@@ -46,8 +46,8 @@ export class HttpServer {
       const match = authHeader.match(/Bearer\s+(.+)/);
       const apiKey = match ? match[1] : req.query.api_key;
 
-      // Skip auth for health check
-      if (req.path === '/health') {
+      // Skip auth for public endpoints
+      if (req.path === '/' || req.path === '/health') {
         return next();
       }
 
