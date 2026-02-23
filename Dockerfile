@@ -26,14 +26,8 @@ WORKDIR /app
 # Install dumb-init
 RUN apk add --no-cache dumb-init
 
-# Copy package.json for reference
-COPY packages/aios-lovable-mcp/package.json ./
-
-# Copy package files for npm install
-COPY packages/aios-lovable-mcp/package.json packages/aios-lovable-mcp/package-lock.json ./
-
-# Install runtime dependencies
-RUN npm ci --prefer-offline
+# Copy node_modules from builder (has all dependencies pre-installed)
+COPY --from=builder /workspace/packages/aios-lovable-mcp/node_modules ./node_modules
 
 # Copy built files
 COPY --from=builder /workspace/packages/aios-lovable-mcp/dist ./dist
