@@ -1,55 +1,49 @@
 # ============================================================
-# AIOS Lovable MCP Server - Production Docker Build
-# Generated: 2026-02-22 - FRESH BUILD - NO CACHE
+# AIOS Lovable MCP - Simplified Build (No Workspace Issues)
 # ============================================================
 
-# Build stage
+# Stage 1: Build dependencies in isolation
 FROM node:22-alpine as builder
 
-WORKDIR /build
+WORKDIR /workspace
 
-# Copy monorepo files
+# Copy root package files
 COPY package.json package-lock.json ./
-
-# Install all dependencies (respects workspaces)
 RUN npm install --prefer-offline --no-audit
 
-# Copy all packages
-COPY packages ./packages
+# Copy source files
+COPY packages/aios-lovable-mcp ./packages/aios-lovable-mcp
 
-# Build aios-lovable-mcp specifically
-WORKDIR /build/packages/aios-lovable-mcp
-RUN npm run build
+# Install workspace package and build
+WORKDIR /workspace/packages/aios-lovable-mcp
+RUN npm install --prefer-offline --no-audit && npm run build
 
-# Production stage
+# Stage 2: Runtime
 FROM node:22-alpine
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
+# Install dumb-init
 RUN apk add --no-cache dumb-init
 
-# Copy package files
+# Copy package.json for reference
 COPY packages/aios-lovable-mcp/package.json ./
 
-# Copy node_modules from builder (already has prod dependencies)
-COPY --from=builder /build/node_modules ./node_modules
+# Copy node_modules from builder (already compiled)
+COPY --from=builder /workspace/node_modules ./node_modules
+COPY --from=builder /workspace/packages/aios-lovable-mcp/node_modules ./aios_modules
 
-# Copy built code from builder
-COPY --from=builder /build/packages/aios-lovable-mcp/dist ./dist
+# Copy only dist folder
+COPY --from=builder /workspace/packages/aios-lovable-mcp/dist ./dist
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S app -u 1001
-
+RUN addgroup -g 1001 -S nodejs && adduser -S app -u 1001
 USER app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-# Use dumb-init to handle signals properly
+# Entrypoint
 ENTRYPOINT ["dumb-init", "--"]
-
-# Start server with HTTP support (cache bust: 2026-02-22-v2)
 CMD ["node", "dist/start-with-http.js"]
