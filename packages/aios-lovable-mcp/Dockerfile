@@ -3,17 +3,17 @@ FROM node:22-alpine as builder
 
 WORKDIR /build
 
-# Copy package files
+# Copy monorepo root files
 COPY package.json package-lock.json ./
 
-# Install dependencies
+# Install all dependencies (monorepo)
 RUN npm ci
 
-# Copy source
-COPY src ./src
-COPY tsconfig.json ./
+# Copy all packages
+COPY packages ./packages
 
-# Build
+# Build aios-lovable-mcp specifically
+WORKDIR /build/packages/aios-lovable-mcp
 RUN npm run build
 
 # Production stage
