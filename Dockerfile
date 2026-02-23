@@ -1,6 +1,6 @@
 # ============================================================
 # AIOS Lovable MCP - Simplified Build (No Workspace Issues)
-# Build timestamp: 2026-02-23T07:10:00Z - Force clean rebuild
+# Build timestamp: 2026-02-23T08:15:00Z - Force clean rebuild (cache bust)
 # ============================================================
 
 # Stage 1: Build dependencies in isolation
