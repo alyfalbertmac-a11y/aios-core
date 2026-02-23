@@ -4,12 +4,13 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "MCP_ENABLED=false node dist/start-with-http.js",
+    "startCommand": "node dist/start-with-http.js",
     "restartPolicyMaxRetries": 5,
     "restartPolicyWindowSeconds": 60,
     "envVariables": {
       "NODE_ENV": "production",
-      "PORT": "3000"
+      "PORT": "3000",
+      "MCP_ENABLED": "false"
     }
   }
 }
