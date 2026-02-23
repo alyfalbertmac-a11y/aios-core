@@ -1,3 +1,8 @@
+# ============================================================
+# AIOS Lovable MCP Server - Production Docker Build
+# Generated: 2026-02-22 - FRESH BUILD - NO CACHE
+# ============================================================
+
 # Build stage
 FROM node:22-alpine as builder
 
