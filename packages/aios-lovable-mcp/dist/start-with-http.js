@@ -9,10 +9,8 @@
  */
 import { createServer } from './server.js';
 import { HttpServer } from './services/http-server.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 const HTTP_PORT = parseInt(process.env.PORT || '3000', 10);
-const MCP_ENABLED = process.env.MCP_ENABLED !== 'false';
 async function main() {
     try {
         // Start HTTP server
@@ -82,14 +80,14 @@ async function main() {
             });
         });
         await httpServer.start();
-        // Optionally start MCP server on stdio (for local dev / CLI usage)
-        if (MCP_ENABLED && !process.env.DISABLE_STDIO_MCP) {
-            const stdiMcpServer = createServer();
-            const transport = new StdioServerTransport();
-            console.error(`[Main] Connecting MCP server to stdio...`);
-            await stdiMcpServer.connect(transport);
-            console.error(`[Main] MCP server connected on stdio`);
-        }
+        // Optional: start MCP server on stdio for local dev (disabled in production)
+        // if (!process.env.DISABLE_STDIO_MCP) {
+        //   const stdiMcpServer = createServer();
+        //   const transport = new StdioServerTransport();
+        //   console.error(`[Main] Connecting MCP server to stdio...`);
+        //   await stdiMcpServer.connect(transport);
+        //   console.error(`[Main] MCP server connected on stdio`);
+        // }
         console.error(`
 ================================================================
          AIOS Lovable MCP Server - READY
