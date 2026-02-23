@@ -75,18 +75,8 @@ export class HttpServer {
                 },
             });
         });
-        // MCP server info endpoint (no auth required)
-        this.app.get('/mcp', (req, res) => {
-            res.json({
-                type: 'mcp-server',
-                name: 'AIOS Lovable',
-                version: '1.0.0',
-                capabilities: {
-                    tools: 7,
-                    resources: ['strategize', 'design', 'architecture', 'code', 'pipeline', 'status', 'artifact'],
-                },
-            });
-        });
+        // Note: /mcp endpoint is mounted in start-with-http.ts for SSE transport
+        // Do not define /mcp here as it would override the SSE handler
         // Lovable connection test endpoint
         // Note: /api/auth is in the skip-auth list, so we parse the token here directly
         this.app.post('/api/auth', async (req, res) => {
