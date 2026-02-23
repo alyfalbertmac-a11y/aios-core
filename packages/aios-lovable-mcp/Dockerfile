@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine as builder
+FROM node:20-alpine as builder
 
 WORKDIR /build
 
@@ -17,7 +17,7 @@ COPY tsconfig.json ./
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -47,4 +47,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start both MCP server and HTTP server
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/start-with-http.js"]
