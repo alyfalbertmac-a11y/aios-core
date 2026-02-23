@@ -25,10 +25,10 @@ WORKDIR /app
 RUN apk add --no-cache dumb-init
 
 # Copy package files
-COPY packages/aios-lovable-mcp/package.json package-lock.json ./
+COPY packages/aios-lovable-mcp/package.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev
+# Copy node_modules from builder (already has prod dependencies)
+COPY --from=builder /build/node_modules ./node_modules
 
 # Copy built code from builder
 COPY --from=builder /build/packages/aios-lovable-mcp/dist ./dist
