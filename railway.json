@@ -1,16 +1,10 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "nixpacks"
+    "builder": "dockerfile"
   },
   "deploy": {
-    "startCommand": "node dist/start-with-http.js",
     "restartPolicyMaxRetries": 5,
-    "restartPolicyWindowSeconds": 60,
-    "envVariables": {
-      "NODE_ENV": "production",
-      "PORT": "3000",
-      "MCP_ENABLED": "false"
-    }
+    "restartPolicyWindowSeconds": 60
   }
 }
