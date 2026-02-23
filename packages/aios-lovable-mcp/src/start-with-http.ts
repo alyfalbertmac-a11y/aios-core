@@ -57,9 +57,10 @@ async function main(): Promise<void> {
 
     // Handle messages from clients
     httpServer.app.post('/mcp/message', async (req: Request, res: Response) => {
-      const sessionId = req.headers['mcp-session-id'] as string;
+      // Accept sessionId from either header or query parameter
+      const sessionId = (req.headers['mcp-session-id'] as string) || (req.query.sessionId as string);
       if (!sessionId) {
-        res.status(400).json({ error: 'mcp-session-id header required' });
+        res.status(400).json({ error: 'sessionId required (header or query parameter)' });
         return;
       }
 

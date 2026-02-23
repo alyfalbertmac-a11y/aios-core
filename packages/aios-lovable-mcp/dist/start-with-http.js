@@ -47,9 +47,10 @@ async function main() {
         });
         // Handle messages from clients
         httpServer.app.post('/mcp/message', async (req, res) => {
-            const sessionId = req.headers['mcp-session-id'];
+            // Accept sessionId from either header or query parameter
+            const sessionId = req.headers['mcp-session-id'] || req.query.sessionId;
             if (!sessionId) {
-                res.status(400).json({ error: 'mcp-session-id header required' });
+                res.status(400).json({ error: 'sessionId required (header or query parameter)' });
                 return;
             }
             const transport = sseTransports.get(sessionId);
