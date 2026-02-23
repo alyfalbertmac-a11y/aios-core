@@ -327,7 +327,7 @@ export class HttpServer {
         console.error(`  GET    /api/jobs/:jobId/stream - Real-time SSE updates`);
         console.error(`  POST   /api/webhooks/test - Test webhook delivery`);
         console.error(`  GET    /health - Health check`);
-        // Never resolve - keep server running indefinitely
+        resolve(); // ✓ Resolve promise to allow startup sequence to complete
       }).on('error', (err) => {
         console.error(`[HTTP Server] ❌ Failed to start:`, err);
         reject(err);

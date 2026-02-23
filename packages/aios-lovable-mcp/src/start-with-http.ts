@@ -248,42 +248,92 @@ class MCPHttpBridge {
 async function main(): Promise<void> {
   try {
     // Start HTTP server
+    console.error('[Main] Starting HTTP server on port', HTTP_PORT);
     const httpServer = new HttpServer(HTTP_PORT);
+    console.error('[Main] ✓ HTTP server instance created');
 
     // Create MCP server instance
-    const mcpServer = createServer();
+    console.error('[Main] Creating MCP server instance...');
+    let mcpServer: any;
+    try {
+      mcpServer = createServer();
+      console.error('[Main] ✓ MCP server created successfully');
+    } catch (e) {
+      console.error('[Main] ✗ FAILED to create MCP server:', e);
+      throw new Error(`MCP server creation failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
 
     // Create HTTP bridge
-    const bridge = new MCPHttpBridge(mcpServer);
+    console.error('[Main] Creating MCPHttpBridge...');
+    let bridge: MCPHttpBridge;
+    try {
+      bridge = new MCPHttpBridge(mcpServer);
+      console.error('[Main] ✓ MCPHttpBridge created successfully');
+    } catch (e) {
+      console.error('[Main] ✗ FAILED to create MCPHttpBridge:', e);
+      throw new Error(`MCPHttpBridge creation failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
 
     // Set message handler on HTTP transport
-    httpTransport.setMessageHandler(async (sessionId, jsonrpcRequest) => {
-      await bridge.handleRequest(sessionId, jsonrpcRequest);
-    });
+    console.error('[Main] Setting message handler on HTTP transport...');
+    try {
+      if (!httpTransport) {
+        throw new Error('httpTransport is undefined or not exported properly');
+      }
+      console.error('[Main] ✓ httpTransport is available');
+
+      if (typeof httpTransport.setMessageHandler !== 'function') {
+        throw new Error('httpTransport.setMessageHandler is not a function');
+      }
+      console.error('[Main] ✓ setMessageHandler method exists');
+
+      httpTransport.setMessageHandler(async (sessionId, jsonrpcRequest) => {
+        await bridge.handleRequest(sessionId, jsonrpcRequest);
+      });
+      console.error('[Main] ✓ Message handler set successfully');
+    } catch (e) {
+      console.error('[Main] ✗ FAILED to set message handler:', e);
+      throw new Error(`Message handler setup failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
 
     // Mount /mcp endpoint - TEST VERSION
-    httpServer.app.get('/mcp', (req: Request, res: Response) => {
-      console.error('[MCP HTTP] GET /mcp - responding with server info');
-      res.json({
-        name: 'aios-lovable-mcp',
-        version: '0.1.0',
-        status: 'ready',
-        protocol: 'MCP 2025-06-18',
+    console.error('[Main] Mounting /mcp endpoints...');
+    try {
+      httpServer.app.get('/mcp', (req: Request, res: Response) => {
+        console.error('[MCP HTTP] GET /mcp - responding with server info');
+        res.json({
+          name: 'aios-lovable-mcp',
+          version: '0.1.0',
+          status: 'ready',
+          protocol: 'MCP 2025-06-18',
+        });
       });
-    });
+      console.error('[Main] ✓ GET /mcp mounted');
 
-    httpServer.app.post('/mcp', async (req: Request, res: Response) => {
-      console.error('[MCP HTTP] POST /mcp - handling JSON-RPC request');
-      try {
-        await httpTransport.handlePost(req, res);
-      } catch (error) {
-        console.error('[MCP HTTP] Error in POST:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    });
+      httpServer.app.post('/mcp', async (req: Request, res: Response) => {
+        console.error('[MCP HTTP] POST /mcp - handling JSON-RPC request');
+        try {
+          await httpTransport.handlePost(req, res);
+        } catch (error) {
+          console.error('[MCP HTTP] Error in POST:', error);
+          res.status(500).json({ error: 'Internal server error' });
+        }
+      });
+      console.error('[Main] ✓ POST /mcp mounted');
+    } catch (e) {
+      console.error('[Main] ✗ FAILED to mount endpoints:', e);
+      throw new Error(`Endpoint mounting failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
 
     // Start the HTTP server
-    await httpServer.start();
+    console.error('[Main] Starting HTTP server...');
+    try {
+      await httpServer.start();
+      console.error('[Main] ✓ HTTP server started successfully');
+    } catch (e) {
+      console.error('[Main] ✗ FAILED to start HTTP server:', e);
+      throw new Error(`HTTP server startup failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
 
     // Display final status
     console.error(`
